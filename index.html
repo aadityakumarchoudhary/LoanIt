@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LoanIt – Streamlining Your Loan Journey</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── LANDING SPECIFIC ── */
+    body { background: #f0f4ff; }
+
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 5rem 2rem 3rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 40%, #e0f2fe 70%, #f0f9ff 100%);
+      z-index: -1;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(26,86,219,0.08) 0%, transparent 70%);
+      top: -100px; right: -100px; z-index: -1;
+    }
+    .hero-inner { max-width: 1200px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: white; border: 1px solid rgba(26,86,219,0.2);
+      border-radius: 99px; padding: 0.35rem 0.9rem;
+      font-size: 0.78rem; font-weight: 600; color: var(--blue);
+      margin-bottom: 1.25rem;
+      box-shadow: 0 2px 8px rgba(26,86,219,0.1);
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-title {
+      font-size: 3.2rem; font-weight: 800; line-height: 1.1;
+      color: var(--navy); letter-spacing: -1.5px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+    .hero-title span { color: var(--blue); }
+    .hero-sub {
+      font-size: 1.05rem; color: var(--text2); line-height: 1.7;
+      margin: 1.25rem 0 2rem;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.6s ease 0.3s both; }
+    .hero-stats { display: flex; gap: 2rem; margin-top: 2.5rem; animation: fadeUp 0.6s ease 0.4s both; }
+    .hero-stat-num { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+    .hero-stat-label { font-size: 0.78rem; color: var(--text2); }
+
+    .hero-visual {
+      position: relative;
+      animation: fadeUp 0.8s ease 0.2s both;
+    }
+    .hero-card-main {
+      background: white; border-radius: 20px;
+      box-shadow: var(--shadow-xl);
+      padding: 1.75rem; position: relative;
+      border: 1px solid var(--border);
+    }
+    .loan-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .loan-bar-fill { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 1.25rem; }
+    .loan-bar-fill-inner { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+    .bank-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 10px; margin-bottom: 0.5rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s; }
+    .bank-row:hover { border-color: var(--blue); background: var(--blue-pale); }
+    .bank-row.selected { border-color: var(--blue); background: var(--blue-pale); }
+    .bank-logo-sm { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; background: var(--bg2); }
+    .bank-name-sm { font-size: 0.85rem; font-weight: 600; flex: 1; }
+    .bank-rate-sm { font-size: 0.78rem; font-weight: 700; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+
+    .floating-card {
+      position: absolute; background: white;
+      border-radius: 14px; box-shadow: var(--shadow-lg);
+      padding: 0.85rem 1rem; border: 1px solid var(--border);
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .float-1 { top: -20px; right: -20px; }
+    .float-2 { bottom: -15px; left: -15px; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+    /* SECTION */
+    .section { padding: 5rem 2rem; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-label { font-size: 0.78rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem; }
+    .section-title { font-size: 2.2rem; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; margin-bottom: 0.75rem; }
+    .section-sub { font-size: 1rem; color: var(--text2); max-width: 540px; line-height: 1.7; }
+
+    /* HOW IT WORKS */
+    .how-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 3rem; position: relative; }
+    .how-grid::before { content: ''; position: absolute; top: 24px; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, var(--blue), var(--cyan)); z-index: 0; }
+    .how-step { text-align: center; position: relative; z-index: 1; }
+    .how-circle {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem; color: white; font-weight: 800; font-size: 1rem;
+      box-shadow: 0 4px 16px rgba(26,86,219,0.35);
+    }
+    .how-title { font-size: 0.9rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem; }
+    .how-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.5; padding: 0 0.5rem; }
+
+    /* FEATURES */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .feat-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s; }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .feat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1rem; }
+    .feat-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feat-desc { font-size: 0.85rem; color: var(--text2); line-height: 1.6; }
+
+    /* SCHEMES */
+    .schemes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 2rem; }
+    .scheme-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+    .scheme-name { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.75rem; }
+    .scheme-row { display: flex; gap: 0.5rem; margin-bottom: 0.4rem; font-size: 0.82rem; }
+    .scheme-key { color: var(--text3); min-width: 90px; }
+    .scheme-val { color: var(--text); font-weight: 500; }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, var(--navy), var(--blue2)); padding: 5rem 2rem; text-align: center; }
+    .cta-title { font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 1rem; letter-spacing: -0.5px; }
+    .cta-sub { color: rgba(255,255,255,0.7); font-size: 1rem; margin-bottom: 2rem; }
+
+    /* FOOTER */
+    footer { background: var(--navy); padding: 2rem; text-align: center; }
+    .footer-text { color: rgba(255,255,255,0.4); font-size: 0.82rem; }
+    .footer-brand { color: white; font-weight: 700; }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .hero-title { font-size: 2.2rem; }
+      .how-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .how-grid::before { display: none; }
+      .features-grid, .schemes-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo">L</div>
+    <span class="nav-name">Loan<span>It</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="compare.html" class="nav-link">Compare Loans</a>
+    <a href="register.html" class="nav-link">Apply Now</a>
+  </div>
+  <div class="nav-actions">
+    <a href="login.html" class="btn btn-outline" id="navLogin">Login</a>
+    <div class="hidden flex-center gap-1" id="navUser">
+      <span style="font-size:0.88rem;font-weight:600;color:var(--text2)">Hi, <span id="navUserName"></span></span>
+      <a href="dashboard.html" class="btn btn-primary btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">🎓 India's #1 Education Loan Platform</div>
+      <h1 class="hero-title">Your Loan Journey,<br><span>Simplified.</span></h1>
+      <p class="hero-sub">Apply once, reach 6+ banks. Compare interest rates, check eligibility instantly, and get your education loan approved faster — completely free for students.</p>
+      <div class="hero-actions">
+        <a href="register.html" class="btn btn-primary btn-lg">Apply for Loan →</a>
+        <a href="compare.html" class="btn btn-ghost btn-lg">Compare Banks</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hero-stat-num">6+</div><div class="hero-stat-label">Partner Banks</div></div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div><div class="hero-stat-num">₹0</div><div class="hero-stat-label">Student Fee</div></div>
+        <div style="width:1px;background:var(--border)"></div>
+        <div><div class="hero-stat-num">10 Days</div><div class="hero-stat-label">Avg Approval</div></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-card-main">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px">Loan Amount</div>
+        <div style="font-size:2rem;font-weight:800;color:var(--navy);margin-bottom:0.5rem">₹8,50,000</div>
+        <div class="loan-bar">
+          <span style="font-size:0.75rem;color:var(--text3)">₹0</span>
+          <span style="font-size:0.75rem;color:var(--text3)">₹20L</span>
+        </div>
+        <div class="loan-bar-fill"><div class="loan-bar-fill-inner" style="width:42%"></div></div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text2);margin-bottom:0.75rem">Best Matched Banks</div>
+        <div class="bank-row selected">
+          <div class="bank-logo-sm">🏦</div>
+          <div class="bank-name-sm">State Bank of India</div>
+          <div class="bank-rate-sm">8.15%</div>
+        </div>
+        <div class="bank-row">
+          <div class="bank-logo-sm">🏛️</div>
+          <div class="bank-name-sm">Union Bank</div>
+          <div class="bank-rate-sm">8.05%</div>
+        </div>
+        <div class="bank-row">
+          <div class="bank-logo-sm">🏢</div>
+          <div class="bank-name-sm">HDFC Bank</div>
+          <div class="bank-rate-sm">9.50%</div>
+        </div>
+        <div style="margin-top:1rem">
+          <a href="register.html" class="btn btn-primary btn-full btn-lg">Apply Now — Free</a>
+        </div>
+      </div>
+      <div class="floating-card float-1">✅ Approved in 10 days!</div>
+      <div class="floating-card float-2">🎓 Zero fees for students</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:white;">
+  <div class="section-inner">
+    <div class="section-label">Simple Process</div>
+    <h2 class="section-title">How LoanIt Works</h2>
+    <p class="section-sub">From registration to disbursement in 5 simple steps — no paperwork, no confusion.</p>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-circle">1</div><div class="how-title">Register</div><div class="how-desc">Create your free student profile in 2 minutes</div></div>
+      <div class="how-step"><div class="how-circle">2</div><div class="how-title">Fill Profile</div><div class="how-desc">Enter academic & financial details once</div></div>
+      <div class="how-step"><div class="how-circle">3</div><div class="how-title">Get Matched</div><div class="how-desc">AI matches you with eligible banks instantly</div></div>
+      <div class="how-step"><div class="how-circle">4</div><div class="how-title">Compare & Apply</div><div class="how-desc">Pick the best offer and apply with 1 click</div></div>
+      <div class="how-step"><div class="how-circle">5</div><div class="how-title">Get Disbursed</div><div class="how-desc">Loan credited directly to your college</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">Why LoanIt</div>
+    <h2 class="section-title">Everything You Need,<br>In One Place</h2>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#eff6ff">🔍</div>
+        <div class="feat-title">Instant Eligibility Check</div>
+        <div class="feat-desc">Know which banks will approve your loan before even applying — no hard credit checks.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#ecfdf5">⚖️</div>
+        <div class="feat-title">Side-by-Side Comparison</div>
+        <div class="feat-desc">Compare interest rates, fees, and terms across 6+ banks on a single screen.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#fef3c7">📂</div>
+        <div class="feat-title">Document Management</div>
+        <div class="feat-desc">Upload once, share with all banks. No more submitting the same papers repeatedly.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#fdf2f8">📱</div>
+        <div class="feat-title">Real-time Tracking</div>
+        <div class="feat-desc">Get live status updates on your application — from submission to final disbursement.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#f0fdf4">🏛️</div>
+        <div class="feat-title">Govt Scheme Guidance</div>
+        <div class="feat-desc">Automatically identify eligible subsidies like CSIS, Padho Pardesh, and more.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#eff6ff">💰</div>
+        <div class="feat-title">Zero Cost for Students</div>
+        <div class="feat-desc">100% free platform. We earn commission from banks — you pay absolutely nothing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOVT SCHEMES -->
+<section class="section" style="background:white;">
+  <div class="section-inner">
+    <div class="section-label">Government Benefits</div>
+    <h2 class="section-title">Don't Miss Out on Subsidies</h2>
+    <p class="section-sub">Thousands of students miss government schemes they're eligible for. LoanIt identifies them automatically.</p>
+    <div class="schemes-grid">
+      <div class="scheme-card">
+        <div class="badge badge-blue mb-2">Central Scheme</div>
+        <div class="scheme-name">Central Sector Interest Subsidy (CSIS)</div>
+        <div class="scheme-row"><span class="scheme-key">Eligibility</span><span class="scheme-val">Family income &lt; ₹4.5L/year</span></div>
+        <div class="scheme-row"><span class="scheme-key">Benefit</span><span class="scheme-val">100% interest during moratorium</span></div>
+        <div class="scheme-row"><span class="scheme-key">Banks</span><span class="scheme-val">All Public Sector Banks</span></div>
+      </div>
+      <div class="scheme-card">
+        <div class="badge badge-orange mb-2">Minority Scheme</div>
+        <div class="scheme-name">Padho Pardesh Scheme</div>
+        <div class="scheme-row"><span class="scheme-key">Eligibility</span><span class="scheme-val">Minority community, abroad studies</span></div>
+        <div class="scheme-row"><span class="scheme-key">Benefit</span><span class="scheme-val">Full interest subsidy overseas</span></div>
+        <div class="scheme-row"><span class="scheme-key">Banks</span><span class="scheme-val">All Scheduled Banks</span></div>
+      </div>
+      <div class="scheme-card">
+        <div class="badge badge-green mb-2">OBC/EBC Scheme</div>
+        <div class="scheme-name">Dr. Ambedkar Interest Subsidy</div>
+        <div class="scheme-row"><span class="scheme-key">Eligibility</span><span class="scheme-val">OBC/EBC, studying abroad</span></div>
+        <div class="scheme-row"><span class="scheme-key">Benefit</span><span class="scheme-val">Full subsidy during course + 1yr</span></div>
+        <div class="scheme-row"><span class="scheme-key">Banks</span><span class="scheme-val">All Scheduled Banks</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="section-label" style="color:rgba(255,255,255,0.5)">Get Started Today</div>
+  <h2 class="cta-title">Ready to Fund Your Dream?</h2>
+  <p class="cta-sub">Join thousands of students who got their education loan through LoanIt — completely free.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <a href="register.html" class="btn btn-lg" style="background:white;color:var(--blue);font-weight:700">Apply for Free →</a>
+    <a href="compare.html" class="btn btn-lg btn-outline" style="border-color:rgba(255,255,255,0.4);color:white">Compare Banks</a>
+  </div>
+</section>
+
+<footer>
+  <p class="footer-text"><span class="footer-brand">LoanIt Ventures</span> · DSA Model · Education Loan Platform · 2025</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

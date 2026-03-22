@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apply for Loan – LoanIt</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .apply-layout { max-width: 860px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+    .apply-header { text-align: center; margin-bottom: 2.5rem; }
+    .apply-title { font-size: 2rem; font-weight: 800; color: var(--navy); }
+    .apply-sub { color: var(--text2); margin-top: 0.4rem; }
+    .step-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 2.5rem; }
+    .steps-bar { display: flex; align-items: flex-start; gap: 0; width: 100%; max-width: 600px; }
+    .s-step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .s-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; border: 2px solid var(--border); background: white; color: var(--text3); transition: all 0.3s; position: relative; z-index: 1; }
+    .s-step.active .s-circle { background: var(--blue); border-color: var(--blue); color: white; box-shadow: 0 4px 16px rgba(26,86,219,0.4); }
+    .s-step.done .s-circle { background: var(--green); border-color: var(--green); color: white; }
+    .s-label { font-size: 0.72rem; font-weight: 600; color: var(--text3); margin-top: 0.5rem; text-align: center; }
+    .s-step.active .s-label { color: var(--blue); }
+    .s-step.done .s-label { color: var(--green); }
+    .s-line { flex: 1; height: 2px; background: var(--border); margin-top: 19px; }
+    .s-step.done + .s-line { background: var(--green); }
+    .step-panel { display: none; background: white; border-radius: 20px; border: 1px solid var(--border); padding: 2rem; box-shadow: var(--shadow-lg); }
+    .step-panel.active { display: block; animation: fadeUp 0.3s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .step-title { font-size: 1.2rem; font-weight: 800; color: var(--navy); margin-bottom: 0.4rem; }
+    .step-desc { font-size: 0.88rem; color: var(--text2); margin-bottom: 1.5rem; }
+    .step-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+
+    /* ELIGIBILITY RESULT */
+    .elig-result { display: none; margin-top: 1.5rem; }
+    .elig-result.show { display: block; animation: fadeUp 0.4s ease; }
+    .elig-score { display: flex; align-items: center; gap: 1.5rem; background: var(--green-pale); border: 1px solid rgba(16,185,129,0.3); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
+    .elig-score-num { font-size: 3rem; font-weight: 800; color: var(--green); font-family: 'JetBrains Mono', monospace; }
+    .elig-score-label { font-size: 0.88rem; color: #065f46; }
+    .bank-match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .bank-match-card { border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 0.9rem; cursor: pointer; transition: all 0.2s; }
+    .bank-match-card:hover { border-color: var(--blue); box-shadow: 0 4px 16px rgba(26,86,219,0.12); }
+    .bank-match-card.selected { border-color: var(--blue); background: var(--blue-pale); }
+    .bank-match-top { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .bank-match-name { font-size: 0.88rem; font-weight: 700; }
+    .bank-match-rate { font-size: 1.1rem; font-weight: 800; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+    .bank-match-emi { font-size: 0.75rem; color: var(--text2); }
+    .bank-match-tag { font-size: 0.68rem; margin-top: 0.35rem; }
+
+    /* SUCCESS */
+    .success-panel { text-align: center; padding: 2rem; }
+    .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .success-title { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+    .success-sub { color: var(--text2); margin: 0.5rem 0 1.5rem; font-size: 0.95rem; }
+    .app-id-box { background: var(--blue-pale); border: 1px solid rgba(26,86,219,0.2); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; display: inline-block; margin: 0.5rem 0 1.5rem; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: var(--blue); }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><div class="nav-logo">L</div><span class="nav-name">Loan<span>It</span></span></a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="compare.html" class="nav-link">Compare</a>
+    <a href="register.html" class="nav-link active">Apply</a>
+  </div>
+  <div class="nav-actions">
+    <a href="login.html" class="btn btn-outline" id="navLogin">Login</a>
+    <div class="hidden flex-center gap-1" id="navUser">
+      <span style="font-size:0.88rem;font-weight:600;color:var(--text2)">Hi, <span id="navUserName"></span></span>
+      <a href="dashboard.html" class="btn btn-primary btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="apply-layout">
+  <div class="apply-header">
+    <h1 class="apply-title">Apply for Education Loan</h1>
+    <p class="apply-sub">Complete 4 simple steps — takes less than 5 minutes</p>
+  </div>
+
+  <!-- STEPS BAR -->
+  <div class="step-wrapper">
+    <div class="steps-bar">
+      <div class="s-step active" id="step-ind-1"><div class="s-circle">1</div><div class="s-label">Personal</div></div>
+      <div class="s-line" id="line-1"></div>
+      <div class="s-step" id="step-ind-2"><div class="s-circle">2</div><div class="s-label">Academic</div></div>
+      <div class="s-line" id="line-2"></div>
+      <div class="s-step" id="step-ind-3"><div class="s-circle">3</div><div class="s-label">Eligibility</div></div>
+      <div class="s-line" id="line-3"></div>
+      <div class="s-step" id="step-ind-4"><div class="s-circle">4</div><div class="s-label">Apply</div></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: PERSONAL DETAILS -->
+  <div class="step-panel active" id="step-1">
+    <div class="step-title">📋 Personal Details</div>
+    <div class="step-desc">Basic information about you and your family</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="p_name" placeholder="Rahul Kumar Sharma"/></div>
+      <div class="form-group"><label class="form-label">Date of Birth *</label><input type="date" class="form-input" id="p_dob"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Mobile Number *</label><input type="tel" class="form-input" id="p_phone" placeholder="9876543210"/></div>
+      <div class="form-group"><label class="form-label">Email Address *</label><input type="email" class="form-input" id="p_email" placeholder="rahul@email.com"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Gender</label>
+        <select class="form-select" id="p_gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="p_category"><option>General</option><option>OBC</option><option>SC</option><option>ST</option><option>EWS</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Annual Family Income *</label>
+        <select class="form-select" id="p_income">
+          <option value="below_45">Below ₹4.5 Lakh</option>
+          <option value="45_to_6">₹4.5L – ₹6L</option>
+          <option value="6_to_10">₹6L – ₹10L</option>
+          <option value="above_10">Above ₹10L</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">City / State</label><input class="form-input" id="p_city" placeholder="Mumbai, Maharashtra"/></div>
+    </div>
+    <div class="step-footer">
+      <div></div>
+      <button class="btn btn-primary btn-lg" onclick="goStep(2)">Next: Academic Details →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: ACADEMIC DETAILS -->
+  <div class="step-panel" id="step-2">
+    <div class="step-title">🎓 Academic Details</div>
+    <div class="step-desc">Information about your course and institution</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">College / University *</label><input class="form-input" id="a_college" placeholder="IIT Delhi"/></div>
+      <div class="form-group"><label class="form-label">Course Name *</label><input class="form-input" id="a_course" placeholder="B.Tech Computer Science"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Course Duration</label>
+        <select class="form-select" id="a_duration">
+          <option value="1">1 Year</option><option value="2">2 Years</option>
+          <option value="3">3 Years</option><option value="4" selected>4 Years</option>
+          <option value="5">5 Years</option><option value="6">6 Years</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Study Location</label>
+        <select class="form-select" id="a_location">
+          <option value="india">India</option>
+          <option value="abroad">Abroad</option>
+        </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Loan Amount Required (₹) *</label><input type="number" class="form-input" id="a_amount" placeholder="800000" min="10000" max="8000000"/></div>
+      <div class="form-group"><label class="form-label">Repayment Tenure</label>
+        <select class="form-select" id="a_tenure">
+          <option value="60">5 Years</option><option value="84">7 Years</option>
+          <option value="120" selected>10 Years</option><option value="180">15 Years</option>
+        </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">12th / Last Exam %</label><input type="number" class="form-input" id="a_marks" placeholder="85" min="0" max="100"/></div>
+      <div class="form-group"><label class="form-label">Co-applicant</label>
+        <select class="form-select" id="a_coapplicant">
+          <option>Father</option><option>Mother</option><option>Spouse</option><option>Guardian</option>
+        </select></div>
+    </div>
+    <div class="step-footer">
+      <button class="btn btn-ghost btn-lg" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="goStep(3)">Check Eligibility →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: ELIGIBILITY -->
+  <div class="step-panel" id="step-3">
+    <div class="step-title">🔍 Eligibility Check</div>
+    <div class="step-desc">Based on your details, here are your best loan options</div>
+
+    <div class="elig-result show" id="eligResult">
+      <div class="elig-score">
+        <div class="elig-score-num" id="eligScore">87</div>
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:#065f46">Excellent Eligibility! ✅</div>
+          <div class="elig-score-label">You qualify for <strong id="eligBankCount">5</strong> out of 6 banks</div>
+          <div class="elig-score-label mt-1" id="eligScheme"></div>
+        </div>
+      </div>
+      <div style="font-size:0.88rem;font-weight:700;color:var(--navy);margin-bottom:0.75rem">Select a Bank to Apply With:</div>
+      <div class="bank-match-grid" id="bankMatchGrid"></div>
+    </div>
+
+    <div class="step-footer">
+      <button class="btn btn-ghost btn-lg" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="goStep(4)">Continue to Apply →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONFIRM & APPLY -->
+  <div class="step-panel" id="step-4">
+    <div class="step-title">✅ Review & Submit</div>
+    <div class="step-desc">Confirm your application details before submitting</div>
+    <div id="reviewContent"></div>
+    <div class="divider"></div>
+    <div class="form-group">
+      <label class="form-label">Any Additional Notes (Optional)</label>
+      <textarea class="form-textarea" id="f_notes" rows="3" placeholder="E.g. I have CSIS eligibility, need moratorium period..."></textarea>
+    </div>
+    <div class="alert alert-info">ℹ️ By submitting, you agree to be contacted by the selected bank's representative via LoanIt's DSA network.</div>
+    <div class="step-footer">
+      <button class="btn btn-ghost btn-lg" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-green btn-lg" onclick="submitApp()">🚀 Submit Application</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="step-panel" id="step-success">
+    <div class="success-panel">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Application Submitted!</div>
+      <div class="success-sub">Your loan application has been received. Track it on your dashboard.</div>
+      <div>Your Application ID:</div>
+      <div class="app-id-box" id="successAppId">APP...</div>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="dashboard.html" class="btn btn-primary btn-lg">Go to Dashboard →</a>
+        <a href="upload.html" class="btn btn-ghost btn-lg">Upload Documents</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+let currentStep = 1;
+let selectedBank = null;
+let appData = {};
+
+function goStep(n) {
+  if (n === 2 && !validateStep1()) return;
+  if (n === 3) { if (!validateStep2()) return; computeEligibility(); }
+  if (n === 4) { if (!selectedBank) { showToast('Please select a bank first', 'warn'); return; } buildReview(); }
+
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + currentStep).classList.add('active');
+
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step-ind-' + i);
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    else if (i === n) el.classList.add('active');
+    if (i < 4) {
+      const line = document.getElementById('line-' + i);
+      line.style.background = i < n ? 'var(--green)' : 'var(--border)';
+    }
+  }
+}
+
+function validateStep1() {
+  const fields = ['p_name','p_phone','p_email','p_income'];
+  for (const f of fields) {
+    if (!document.getElementById(f).value.trim()) {
+      showToast('Please fill all required fields', 'error'); return false;
+    }
+  }
+  return true;
+}
+function validateStep2() {
+  if (!document.getElementById('a_college').value.trim() || !document.getElementById('a_course').value.trim() || !document.getElementById('a_amount').value) {
+    showToast('Please fill all required fields', 'error'); return false;
+  }
+  return true;
+}
+
+function computeEligibility() {
+  const amount = parseFloat(document.getElementById('a_amount').value) || 500000;
+  const income = document.getElementById('p_income').value;
+  const marks  = parseFloat(document.getElementById('a_marks').value) || 70;
+  const tenure = parseInt(document.getElementById('a_tenure').value);
+  const location = document.getElementById('a_location').value;
+
+  let score = 60;
+  if (marks >= 80) score += 15; else if (marks >= 60) score += 8;
+  if (income === 'below_45' || income === '45_to_6') score += 12;
+  else if (income === '6_to_10') score += 6;
+  score = Math.min(score, 99);
+
+  document.getElementById('eligScore').textContent = score;
+
+  let schemeText = '';
+  if (income === 'below_45') schemeText = '🎁 You qualify for CSIS interest subsidy!';
+  else if (income === '45_to_6') schemeText = '✅ You may qualify for CSIS subsidy!';
+  document.getElementById('eligScheme').textContent = schemeText;
+
+  const matched = BANKS.filter(b => amount <= b.maxAmount && (location !== 'abroad' || b.maxAmount >= 1500000));
+  document.getElementById('eligBankCount').textContent = matched.length;
+
+  const grid = document.getElementById('bankMatchGrid');
+  grid.innerHTML = matched.map(b => {
+    const emi = calcEMI(amount, b.minRate, tenure);
+    return `<div class="bank-match-card" onclick="selectBank('${b.id}', this)" id="bcard-${b.id}">
+      <div class="bank-match-top">
+        <span style="font-size:1.3rem">${b.logo}</span>
+        <div>
+          <div class="bank-match-name">${b.name}</div>
+          <div class="bank-match-rate">${b.minRate}% p.a.</div>
+        </div>
+        ${b.tag ? `<span class="badge badge-blue" style="margin-left:auto;font-size:0.6rem">${b.tag}</span>` : ''}
+      </div>
+      <div class="bank-match-emi">EMI: ~${fmtCurrency(Math.round(emi))}/mo | ${b.disbursalDays} day disbursal</div>
+    </div>`;
+  }).join('');
+}
+
+function selectBank(id, el) {
+  selectedBank = id;
+  document.querySelectorAll('.bank-match-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function buildReview() {
+  const bank = BANKS.find(b => b.id === selectedBank);
+  const amount = document.getElementById('a_amount').value;
+  const tenure = document.getElementById('a_tenure').value;
+  const emi = bank ? calcEMI(parseFloat(amount), bank.minRate, parseInt(tenure)) : 0;
+
+  document.getElementById('reviewContent').innerHTML = `
+    <div class="grid-2">
+      <div>
+        <div class="text-sm text-muted mb-2">Personal Info</div>
+        <div style="font-size:0.88rem;line-height:2">
+          <strong>Name:</strong> ${document.getElementById('p_name').value}<br>
+          <strong>Email:</strong> ${document.getElementById('p_email').value}<br>
+          <strong>Phone:</strong> ${document.getElementById('p_phone').value}<br>
+          <strong>Category:</strong> ${document.getElementById('p_category').value}
+        </div>
+      </div>
+      <div>
+        <div class="text-sm text-muted mb-2">Loan Details</div>
+        <div style="font-size:0.88rem;line-height:2">
+          <strong>Bank:</strong> ${bank?.name}<br>
+          <strong>Amount:</strong> ${fmtCurrency(amount)}<br>
+          <strong>Rate:</strong> ${bank?.minRate}% p.a.<br>
+          <strong>Est. EMI:</strong> ${fmtCurrency(Math.round(emi))}/month
+        </div>
+      </div>
+    </div>`;
+
+  appData = {
+    userId: getCurrentUser()?.id || 'guest_' + Date.now(),
+    studentName: document.getElementById('p_name').value,
+    email: document.getElementById('p_email').value,
+    phone: document.getElementById('p_phone').value,
+    category: document.getElementById('p_category').value,
+    income: document.getElementById('p_income').value,
+    college: document.getElementById('a_college').value,
+    course: document.getElementById('a_course').value,
+    amount: parseFloat(amount),
+    tenure: parseInt(tenure),
+    bankId: selectedBank,
+    bankName: bank?.name,
+    rate: bank?.minRate,
+    location: document.getElementById('a_location').value,
+    marks: document.getElementById('a_marks').value,
+  };
+}
+
+function submitApp() {
+  appData.notes = document.getElementById('f_notes').value;
+  const app = addApplication(appData);
+  document.getElementById('step-4').classList.remove('active');
+  document.getElementById('step-success').classList.add('active');
+  document.getElementById('successAppId').textContent = app.id;
+  showToast('Application submitted successfully! 🎉');
+}
+</script>
+</body>
+</html>

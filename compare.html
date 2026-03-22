@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compare Loans – LoanIt</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .compare-layout { max-width: 1200px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+    .filter-bar { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow); }
+    .filter-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end; }
+    .filter-label { font-size: 0.75rem; font-weight: 600; color: var(--text2); margin-bottom: 0.35rem; }
+    .bank-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .bank-card { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all 0.25s; }
+    .bank-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--blue); }
+    .bank-card-header { padding: 1.25rem; display: flex; align-items: center; gap: 0.85rem; border-bottom: 1px solid var(--border); }
+    .bank-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: var(--bg2); }
+    .bank-card-name { font-size: 1rem; font-weight: 800; color: var(--navy); }
+    .bank-card-type { font-size: 0.75rem; color: var(--text2); }
+    .bank-card-body { padding: 1.25rem; }
+    .bank-rate-display { display: flex; align-items: baseline; gap: 0.35rem; margin-bottom: 0.5rem; }
+    .bank-rate-num { font-size: 2rem; font-weight: 800; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+    .bank-rate-suffix { font-size: 0.85rem; color: var(--text2); font-weight: 600; }
+    .bank-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin: 1rem 0; }
+    .bank-meta-item { background: var(--surface2); border-radius: 8px; padding: 0.6rem 0.75rem; }
+    .bank-meta-label { font-size: 0.68rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .bank-meta-val { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-top: 0.15rem; }
+    .bank-features { margin-bottom: 1rem; }
+    .bank-feature { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.3rem; }
+    .bank-feature::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .bank-stars { color: #f59e0b; font-size: 0.88rem; }
+    .emi-calc { background: var(--blue-pale); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1rem; }
+    .emi-calc-label { font-size: 0.72rem; color: var(--blue2); margin-bottom: 0.15rem; }
+    .emi-calc-val { font-size: 1.1rem; font-weight: 800; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+
+    /* COMPARISON TABLE */
+    .compare-table-wrapper { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); margin-top: 2.5rem; }
+    .compare-table-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .compare-table th { background: var(--navy); color: white; font-size: 0.78rem; padding: 0.85rem 1rem; }
+    .compare-table td { font-size: 0.85rem; }
+    .compare-table .best { color: var(--green); font-weight: 700; }
+
+    @media (max-width: 900px) { .bank-grid { grid-template-columns: 1fr 1fr; } .filter-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .bank-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><div class="nav-logo">L</div><span class="nav-name">Loan<span>It</span></span></a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="compare.html" class="nav-link active">Compare</a>
+    <a href="register.html" class="nav-link">Apply</a>
+  </div>
+  <div class="nav-actions">
+    <a href="login.html" class="btn btn-outline" id="navLogin">Login</a>
+    <div class="hidden flex-center gap-1" id="navUser">
+      <span style="font-size:0.88rem;font-weight:600;color:var(--text2)">Hi, <span id="navUserName"></span></span>
+      <a href="dashboard.html" class="btn btn-primary btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<div class="compare-layout">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Compare Education Loans</h1>
+      <p class="page-sub">Enter your loan amount to see real EMI calculations across all banks</p>
+    </div>
+    <a href="register.html" class="btn btn-primary">Apply Now →</a>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-row">
+      <div>
+        <div class="filter-label">Loan Amount (₹)</div>
+        <input type="number" class="form-input" id="f_amount" value="800000" placeholder="e.g. 800000" oninput="renderBanks()"/>
+      </div>
+      <div>
+        <div class="filter-label">Tenure (Months)</div>
+        <select class="form-select" id="f_tenure" onchange="renderBanks()">
+          <option value="60">5 Years</option>
+          <option value="84">7 Years</option>
+          <option value="120" selected>10 Years</option>
+          <option value="180">15 Years</option>
+        </select>
+      </div>
+      <div>
+        <div class="filter-label">Bank Type</div>
+        <select class="form-select" id="f_type" onchange="renderBanks()">
+          <option value="">All Banks</option>
+          <option value="PSB">Public Sector</option>
+          <option value="Private">Private Banks</option>
+        </select>
+      </div>
+      <div>
+        <div class="filter-label">Sort By</div>
+        <select class="form-select" id="f_sort" onchange="renderBanks()">
+          <option value="rate">Lowest Rate</option>
+          <option value="emi">Lowest EMI</option>
+          <option value="disbursal">Fastest Disbursal</option>
+          <option value="rating">Highest Rated</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="renderBanks()">🔄 Update</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SUMMARY -->
+  <div class="grid-4 mb-3" id="summaryCards"></div>
+
+  <!-- BANK CARDS -->
+  <div class="bank-grid" id="bankGrid"></div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="compare-table-wrapper">
+    <div class="compare-table-header">
+      <div style="font-size:1rem;font-weight:800;color:var(--navy)">📊 Detailed Comparison Table</div>
+      <span class="badge badge-blue">All Banks</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Bank</th><th>Interest Rate</th><th>Max Amount</th><th>Processing Fee</th>
+            <th>Disbursal</th><th>Rating</th><th>Best For</th>
+          </tr>
+        </thead>
+        <tbody id="compareTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+function getFiltered() {
+  const amount = parseFloat(document.getElementById('f_amount').value) || 800000;
+  const type   = document.getElementById('f_type').value;
+  const sort   = document.getElementById('f_sort').value;
+  const tenure = parseInt(document.getElementById('f_tenure').value);
+
+  let banks = BANKS.filter(b => !type || b.type === type);
+
+  banks = banks.map(b => ({ ...b, emi: calcEMI(Math.min(amount, b.maxAmount), b.minRate, tenure) }));
+
+  if (sort === 'rate')      banks.sort((a,b) => a.minRate - b.minRate);
+  else if (sort === 'emi')  banks.sort((a,b) => a.emi - b.emi);
+  else if (sort === 'disbursal') banks.sort((a,b) => a.disbursalDays - b.disbursalDays);
+  else if (sort === 'rating')    banks.sort((a,b) => b.rating - a.rating);
+
+  return { banks, amount, tenure };
+}
+
+function renderBanks() {
+  const { banks, amount, tenure } = getFiltered();
+
+  // Summary cards
+  const minRate = Math.min(...banks.map(b => b.minRate));
+  const minEMI  = Math.min(...banks.map(b => b.emi));
+  const minDisbursal = Math.min(...banks.map(b => b.disbursalDays));
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="stat-card blue"><div class="stat-icon">🏦</div><div class="stat-num">${banks.length}</div><div class="stat-label">Banks Available</div></div>
+    <div class="stat-card green"><div class="stat-icon">📉</div><div class="stat-num">${minRate}%</div><div class="stat-label">Lowest Rate</div></div>
+    <div class="stat-card blue"><div class="stat-icon">💳</div><div class="stat-num">${fmtCurrency(Math.round(minEMI))}</div><div class="stat-label">Lowest EMI/mo</div></div>
+    <div class="stat-card orange"><div class="stat-icon">⚡</div><div class="stat-num">${minDisbursal} days</div><div class="stat-label">Fastest Approval</div></div>
+  `;
+
+  // Bank cards
+  document.getElementById('bankGrid').innerHTML = banks.map((b, i) => `
+    <div class="bank-card">
+      <div class="bank-card-header">
+        <div class="bank-icon">${b.logo}</div>
+        <div style="flex:1">
+          <div class="bank-card-name">${b.name}</div>
+          <div class="bank-card-type">${b.type === 'PSB' ? '🏛️ Public Sector' : '🏢 Private Bank'}</div>
+        </div>
+        ${b.tag ? `<span class="badge badge-blue">${b.tag}</span>` : ''}
+        ${i === 0 ? '<span class="badge badge-green">Best Match</span>' : ''}
+      </div>
+      <div class="bank-card-body">
+        <div class="bank-rate-display">
+          <div class="bank-rate-num">${b.minRate}%</div>
+          <div class="bank-rate-suffix">– ${b.maxRate}% p.a.</div>
+        </div>
+        <div class="bank-stars">${'★'.repeat(Math.floor(b.rating))}${'☆'.repeat(5-Math.floor(b.rating))} <span style="font-size:0.78rem;color:var(--text2)">${b.rating}/5</span></div>
+        <div class="bank-meta">
+          <div class="bank-meta-item"><div class="bank-meta-label">Max Loan</div><div class="bank-meta-val">${fmtCurrency(b.maxAmount)}</div></div>
+          <div class="bank-meta-item"><div class="bank-meta-label">Processing</div><div class="bank-meta-val">${b.processingFee === 0 ? 'FREE' : b.processingFee + '%'}</div></div>
+          <div class="bank-meta-item"><div class="bank-meta-label">Disbursal</div><div class="bank-meta-val">${b.disbursalDays} days</div></div>
+          <div class="bank-meta-item"><div class="bank-meta-label">Tenure</div><div class="bank-meta-val">Up to ${b.tenure[1]/12} yrs</div></div>
+        </div>
+        <div class="emi-calc">
+          <div class="emi-calc-label">Your EMI for ${fmtCurrency(Math.min(amount, b.maxAmount))}</div>
+          <div class="emi-calc-val">${fmtCurrency(Math.round(b.emi))}/month</div>
+        </div>
+        <div class="bank-features">
+          ${b.features.map(f => `<div class="bank-feature">${f}</div>`).join('')}
+        </div>
+        <a href="register.html" class="btn btn-primary btn-full">Apply with ${b.name.split(' ')[0]} →</a>
+      </div>
+    </div>
+  `).join('');
+
+  // Table
+  document.getElementById('compareTableBody').innerHTML = banks.map(b => `
+    <tr>
+      <td><strong>${b.logo} ${b.name}</strong></td>
+      <td class="${b.minRate === Math.min(...banks.map(x=>x.minRate)) ? 'best' : ''}">${b.minRate}% – ${b.maxRate}%</td>
+      <td>${fmtCurrency(b.maxAmount)}</td>
+      <td>${b.processingFee === 0 ? '<span class="badge badge-green">Free</span>' : b.processingFee + '% of loan'}</td>
+      <td class="${b.disbursalDays === Math.min(...banks.map(x=>x.disbursalDays)) ? 'best' : ''}">${b.disbursalDays} days</td>
+      <td>⭐ ${b.rating}</td>
+      <td><span class="badge badge-gray">${b.tag || b.type}</span></td>
+    </tr>
+  `).join('');
+}
+
+renderBanks();
+</script>
+</body>
+</html>

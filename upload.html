@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Documents – LoanIt</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    .doc-card { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; transition: all 0.2s; }
+    .doc-card.uploaded { border-color: var(--green); background: var(--green-pale); }
+    .doc-card.required { border-color: rgba(245,158,11,0.5); }
+    .doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .doc-icon { font-size: 1.8rem; }
+    .doc-name { font-size: 0.95rem; font-weight: 700; color: var(--navy); }
+    .doc-desc { font-size: 0.78rem; color: var(--text2); margin-top: 0.2rem; }
+    .doc-formats { font-size: 0.72rem; color: var(--text3); margin-top: 0.4rem; }
+    .upload-zone { border: 2px dashed var(--border2); border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-top: 0.75rem; }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--blue); background: var(--blue-pale); }
+    .upload-zone.done { border-color: var(--green); background: var(--green-pale); border-style: solid; }
+    .upload-icon { font-size: 1.5rem; margin-bottom: 0.35rem; }
+    .upload-text { font-size: 0.82rem; color: var(--text2); }
+    .upload-text strong { color: var(--blue); }
+    .upload-file-name { font-size: 0.82rem; font-weight: 600; color: var(--green); }
+    .progress-ring { margin: 0 auto 1.5rem; }
+    .upload-summary { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; }
+    .summary-frac { font-size: 2rem; font-weight: 800; color: var(--navy); font-family: 'JetBrains Mono', monospace; }
+    .prog-bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; flex: 1; margin: 0 1rem; }
+    .prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width 0.5s; }
+    @media (max-width: 600px) { .doc-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand"><div class="nav-logo">L</div><span class="nav-name">Loan<span>It</span></span></a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="upload.html" class="nav-link active">Documents</a>
+    <a href="compare.html" class="nav-link">Compare</a>
+  </div>
+  <div class="nav-actions">
+    <div class="flex-center gap-1" id="navUser">
+      <span style="font-size:0.88rem;font-weight:600;color:var(--text2)">Hi, <span id="navUserName"></span></span>
+      <button onclick="logout()" class="btn btn-ghost btn-sm">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Student Portal</div>
+    <a href="dashboard.html" class="sidebar-link"><span class="icon">📊</span> Dashboard</a>
+    <a href="register.html" class="sidebar-link"><span class="icon">📝</span> Apply for Loan</a>
+    <a href="compare.html" class="sidebar-link"><span class="icon">⚖️</span> Compare Banks</a>
+    <a href="upload.html" class="sidebar-link active"><span class="icon">📂</span> Documents</a>
+    <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
+      <button onclick="logout()" class="btn btn-ghost btn-full btn-sm">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="flex-between mb-3">
+      <div>
+        <h1 class="page-title">Document Upload</h1>
+        <p class="page-sub">Upload your documents securely — stored in the cloud, shared with your bank automatically</p>
+      </div>
+      <button class="btn btn-primary" onclick="submitAllDocs()">✅ Submit All Documents</button>
+    </div>
+
+    <div class="alert alert-info mb-3">
+      📌 Upload documents in PDF, JPG, or PNG format. Max file size: 5MB per document. All files are encrypted and secure.
+    </div>
+
+    <!-- PROGRESS SUMMARY -->
+    <div class="upload-summary">
+      <div class="summary-row">
+        <div>
+          <div style="font-size:0.78rem;font-weight:700;color:var(--text2);margin-bottom:0.25rem">UPLOAD PROGRESS</div>
+          <div class="summary-frac"><span id="uploadedCount">0</span>/<span id="totalCount">8</span></div>
+          <div style="font-size:0.78rem;color:var(--text2)">documents uploaded</div>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        <div style="text-align:right">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--blue)" id="progPct">0%</div>
+          <div style="font-size:0.78rem;color:var(--text2)">Complete</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS GRID -->
+    <div class="doc-grid" id="docGrid"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+if (!requireAuth()) throw '';
+
+const DOCS = [
+  { id: 'aadhar',     name: 'Aadhaar Card',               icon: '🪪', desc: 'Front and back of Aadhaar card', formats: 'PDF, JPG, PNG', required: true },
+  { id: 'pan',        name: 'PAN Card',                    icon: '💳', desc: 'PAN card of student and co-applicant', formats: 'PDF, JPG, PNG', required: true },
+  { id: 'marksheet',  name: '10th & 12th Marksheet',       icon: '📜', desc: 'Latest qualifying examination marksheet', formats: 'PDF only', required: true },
+  { id: 'admission',  name: 'Admission Letter',            icon: '🎓', desc: 'Official admission letter from college', formats: 'PDF only', required: true },
+  { id: 'income',     name: 'Income Proof',                icon: '💼', desc: 'Salary slips or ITR of co-applicant', formats: 'PDF, JPG', required: true },
+  { id: 'bank',       name: 'Bank Statement (6 months)',   icon: '🏦', desc: 'Co-applicant bank account statement', formats: 'PDF only', required: true },
+  { id: 'photo',      name: 'Passport Size Photos',        icon: '📸', desc: '2 recent passport size photographs', formats: 'JPG, PNG', required: false },
+  { id: 'address',    name: 'Address Proof',               icon: '🏠', desc: 'Utility bill or rent agreement', formats: 'PDF, JPG', required: false },
+];
+
+let uploaded = DB.get('uploaded_docs') || {};
+
+function renderDocs() {
+  const count = Object.keys(uploaded).length;
+  document.getElementById('uploadedCount').textContent = count;
+  document.getElementById('progFill').style.width = (count / DOCS.length * 100) + '%';
+  document.getElementById('progPct').textContent = Math.round(count / DOCS.length * 100) + '%';
+
+  document.getElementById('docGrid').innerHTML = DOCS.map(doc => {
+    const done = !!uploaded[doc.id];
+    return `<div class="doc-card ${done ? 'uploaded' : doc.required ? 'required' : ''}">
+      <div class="doc-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <span class="doc-icon">${doc.icon}</span>
+            <div>
+              <div class="doc-name">${doc.name}</div>
+              <div class="doc-formats">Accepted: ${doc.formats}</div>
+            </div>
+          </div>
+          <div class="doc-desc mt-1">${doc.desc}</div>
+        </div>
+        <div>
+          ${doc.required ? '<span class="badge badge-orange">Required</span>' : '<span class="badge badge-gray">Optional</span>'}
+          ${done ? '<br><span class="badge badge-green mt-1">✓ Uploaded</span>' : ''}
+        </div>
+      </div>
+      <div class="upload-zone ${done ? 'done' : ''}" onclick="triggerUpload('${doc.id}')" id="zone-${doc.id}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event,'${doc.id}')">
+        ${done
+          ? `<div class="upload-icon">✅</div><div class="upload-file-name">${uploaded[doc.id]}</div><div class="upload-text" style="margin-top:0.25rem"><strong>Click to replace</strong></div>`
+          : `<div class="upload-icon">☁️</div><div class="upload-text"><strong>Click to upload</strong> or drag & drop</div>`
+        }
+      </div>
+      <input type="file" id="file-${doc.id}" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFile('${doc.id}', this)"/>
+    </div>`;
+  }).join('');
+}
+
+function triggerUpload(id) {
+  document.getElementById('file-' + id).click();
+}
+
+function handleFile(id, input) {
+  if (!input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) { showToast('File too large. Max 5MB allowed.', 'error'); return; }
+  uploaded[id] = file.name;
+  DB.set('uploaded_docs', uploaded);
+  showToast('✅ ' + file.name + ' uploaded successfully!');
+  renderDocs();
+}
+
+function handleDrop(event, id) {
+  event.preventDefault();
+  document.getElementById('zone-' + id).classList.remove('drag');
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  uploaded[id] = file.name;
+  DB.set('uploaded_docs', uploaded);
+  showToast('✅ ' + file.name + ' uploaded!');
+  renderDocs();
+}
+
+function submitAllDocs() {
+  const requiredIds = DOCS.filter(d => d.required).map(d => d.id);
+  const missing = requiredIds.filter(id => !uploaded[id]);
+  if (missing.length > 0) {
+    showToast(`Please upload all required documents first. Missing: ${missing.length}`, 'error');
+    return;
+  }
+  showToast('🎉 All documents submitted to your bank! You will be notified within 2 business days.', 'success');
+  const apps = getMyApplications();
+  if (apps.length > 0) updateAppStatus(apps[0].id, 'under_review', 'Documents received. Bank review started.');
+}
+
+renderDocs();
+</script>
+</body>
+</html>
