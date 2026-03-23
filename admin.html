@@ -1,389 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel – LoanIt</title>
-  <link rel="stylesheet" href="style.css"/>
-  <link rel="icon" type="image/jpg" href="logo.jpg"/>
-  <style>
-    .admin-sidebar { background: var(--navy); border-color: rgba(255,255,255,0.08); }
-    .admin-sidebar .sidebar-section { color: rgba(255,255,255,0.35); }
-    .admin-sidebar .sidebar-link { color: rgba(255,255,255,0.6); }
-    .admin-sidebar .sidebar-link:hover, .admin-sidebar .sidebar-link.active { background: rgba(255,255,255,0.1); color: white; }
-    .admin-sidebar .nav-name { color: white; }
-    .section-tab { padding: 0.6rem 1.1rem; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; background: var(--surface2); color: var(--text2); font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; }
-    .section-tab.active { background: var(--blue); color: white; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; animation: fadeUp 0.3s ease; }
-    @keyframes fadeUp { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:none; } }
-    .status-select { padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: 1.5px solid var(--border); background: white; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; }
-    .action-btn { padding: 0.35rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; border: none; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; }
-    .action-approve { background: var(--green-pale); color: var(--green); }
-    .action-reject  { background: var(--red-pale);   color: var(--red); }
-    .action-review  { background: var(--blue-pale);  color: var(--blue); }
-    .action-disburse { background: #fef3c7; color: #d97706; }
-    .detail-panel { background: var(--surface2); border-radius: var(--radius); padding: 1.25rem; margin-top: 0.75rem; }
-    .detail-row { display: flex; gap: 0.5rem; margin-bottom: 0.35rem; font-size: 0.85rem; }
-    .detail-key { color: var(--text2); min-width: 120px; }
-    .chart-bar-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
-    .chart-bar-label { font-size: 0.8rem; font-weight: 600; min-width: 80px; color: var(--text2); }
-    .chart-bar-bg { flex: 1; height: 22px; background: var(--surface2); border-radius: 6px; overflow: hidden; }
-    .chart-bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; font-size: 0.72rem; font-weight: 700; color: white; transition: width 0.7s; }
-    .search-bar { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LoanIt – Admin Panel</title>
+<link rel="stylesheet" href="style.css"/>
+<link rel="icon" href="logo.jpg" type="image/jpeg"/>
 </head>
 <body>
-
-<nav class="navbar" style="background:var(--navy);border-bottom-color:rgba(255,255,255,0.1)">
-  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem"><img src="logo.jpg" style="height:40px;width:auto;object-fit:contain"/><span style="font-size:0.75rem;background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:99px;color:rgba(255,255,255,0.85);font-weight:700;margin-left:0.25rem">ADMIN</span></a>
-  <div class="nav-actions">
-    <span style="font-size:0.88rem;color:rgba(255,255,255,0.6)">Logged in as Admin</span>
-    <button onclick="logout()" class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)">Logout</button>
-  </div>
-</nav>
-
 <div class="app-layout">
-  <aside class="sidebar admin-sidebar">
-    <div class="sidebar-section">Admin Panel</div>
-    <a href="#" class="sidebar-link active" onclick="switchTab('overview')"><span class="icon">📊</span> Overview</a>
-    <a href="#" class="sidebar-link" onclick="switchTab('applications')"><span class="icon">📋</span> Applications</a>
-    <a href="#" class="sidebar-link" onclick="switchTab('users')"><span class="icon">👥</span> Students</a>
-    <a href="#" class="sidebar-link" onclick="switchTab('analytics')"><span class="icon">📈</span> Analytics</a>
-    <div style="margin-top:auto;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1)">
-      <button onclick="seedDemoData()" class="btn btn-sm btn-full" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15)">🌱 Load Demo Data</button>
+  <aside class="sidebar">
+    <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem">
+      <img src="logo.jpg" class="nav-logo-img" alt="LoanIt"/>
+      <span style="font-size:.75rem;background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:99px;color:rgba(255,255,255,0.85);font-weight:700">ADMIN</span>
+    </a>
+    <nav class="nav-links">
+      <a href="admin.html" class="nav-item active"><span class="nav-icon">🛡️</span><span>All Applications</span></a>
+      <a href="#" class="nav-item" onclick="loadUsers()"><span class="nav-icon">👥</span><span>Users</span></a>
+    </nav>
+    <div class="nav-bottom">
+      <button onclick="doLogout()" class="nav-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;">
+        <span class="nav-icon">🚪</span><span>Logout</span>
+      </button>
     </div>
   </aside>
 
-  <div class="main-content">
-    <div class="flex-between mb-3">
+  <main class="main-content">
+    <div class="page-header">
       <div>
-        <h1 class="page-title">Admin Dashboard</h1>
-        <p class="page-sub">Manage all loan applications and student accounts</p>
+        <h1 class="page-title">Admin Panel</h1>
+        <p class="page-subtitle">Manage all loan applications</p>
       </div>
-      <div style="display:flex;gap:0.5rem">
-        <button class="section-tab active" onclick="switchTab('overview')" id="tab-overview">Overview</button>
-        <button class="section-tab" onclick="switchTab('applications')" id="tab-applications">Applications</button>
-        <button class="section-tab" onclick="switchTab('users')" id="tab-users">Students</button>
-        <button class="section-tab" onclick="switchTab('analytics')" id="tab-analytics">Analytics</button>
-      </div>
+      <button class="btn btn-primary" onclick="loadApplications()">🔄 Refresh</button>
     </div>
 
-    <!-- OVERVIEW -->
-    <div class="tab-content active" id="content-overview">
-      <div class="grid-4 mb-3" id="adminStats"></div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">Recent Applications</div>
-          <div id="recentApps"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Applications by Status</div>
-          <div id="statusChart"></div>
-        </div>
-      </div>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-info"><div class="stat-value" id="aTotal">0</div><div class="stat-label">Total Applications</div></div></div>
+      <div class="stat-card yellow"><div class="stat-icon">⏳</div><div class="stat-info"><div class="stat-value" id="aPending">0</div><div class="stat-label">Pending Review</div></div></div>
+      <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-info"><div class="stat-value" id="aApproved">0</div><div class="stat-label">Approved</div></div></div>
+      <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-info"><div class="stat-value" id="aAmount">₹0</div><div class="stat-label">Total Loan Value</div></div></div>
     </div>
 
-    <!-- APPLICATIONS -->
-    <div class="tab-content" id="content-applications">
-      <div class="card">
-        <div class="search-bar">
-          <input class="form-input" id="appSearch" placeholder="🔍 Search by name, bank, ID..." oninput="renderAppsTable()" style="flex:1"/>
-          <select class="form-select" id="appStatusFilter" onchange="renderAppsTable()" style="width:160px">
-            <option value="">All Status</option>
-            <option value="submitted">Submitted</option>
-            <option value="under_review">Under Review</option>
-            <option value="document_pending">Docs Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="disbursed">Disbursed</option>
-          </select>
-          <select class="form-select" id="appBankFilter" onchange="renderAppsTable()" style="width:160px">
-            <option value="">All Banks</option>
-            ${BANKS.map(b=>`<option value="${b.id}">${b.name.split(' ').slice(0,2).join(' ')}</option>`).join('')}
-          </select>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr><th>App ID</th><th>Student</th><th>Bank</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="appsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- USERS -->
-    <div class="tab-content" id="content-users">
-      <div class="card">
-        <div class="flex-between mb-2">
-          <div class="card-title" style="margin:0">Registered Students</div>
-          <span class="badge badge-blue" id="userCount">0 students</span>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Applications</th></tr></thead>
-            <tbody id="usersTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ANALYTICS -->
-    <div class="tab-content" id="content-analytics">
-      <div class="grid-4 mb-3" id="analyticsStats"></div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">Applications by Bank</div>
-          <div id="bankChart"></div>
-        </div>
-        <div class="card">
-          <div class="card-title">Loan Amount Distribution</div>
-          <div id="amountChart"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- STATUS UPDATE MODAL -->
-<div class="modal-overlay" id="statusModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Update Application Status</div>
-      <button class="modal-close" onclick="closeStatusModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="modalAppInfo" style="background:var(--surface2);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;font-size:0.88rem"></div>
-      <div class="form-group">
-        <label class="form-label">New Status</label>
-        <select class="form-select" id="newStatus">
-          <option value="submitted">Submitted</option>
-          <option value="under_review">Under Review</option>
-          <option value="document_pending">Documents Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="disbursed">Disbursed</option>
+    <!-- Filter Bar -->
+    <div class="card" style="padding:1rem 1.5rem">
+      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+        <input type="text" id="searchInput" placeholder="Search by name or college..." oninput="filterApps()" style="flex:1;min-width:200px;padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)"/>
+        <select id="statusFilter" onchange="filterApps()" style="padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+          <option value="">All Status</option>
+          <option>Submitted</option>
+          <option>Under Review</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+          <option>Disbursed</option>
+        </select>
+        <select id="bankFilter" onchange="filterApps()" style="padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+          <option value="">All Banks</option>
+          <option>State Bank of India</option>
+          <option>HDFC Bank</option>
+          <option>Axis Bank</option>
+          <option>Bank of Baroda</option>
+          <option>Union Bank</option>
+          <option>Punjab National Bank</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Note / Reason</label>
-        <textarea class="form-textarea" id="statusNote" rows="3" placeholder="e.g. Documents verified, loan approved"></textarea>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card">
+      <div id="adminAppsList">
+        <div style="text-align:center;padding:3rem;color:var(--text-muted)">
+          <div style="font-size:2rem;margin-bottom:1rem">⏳</div>
+          <p>Loading applications from Firebase...</p>
+        </div>
       </div>
-      <button class="btn btn-primary btn-full btn-lg" onclick="confirmStatusUpdate()">Update Status</button>
+    </div>
+
+    <!-- Users Section (hidden by default) -->
+    <div class="card" id="usersSection" style="display:none">
+      <h2 class="card-title">Registered Users</h2>
+      <div id="usersList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Status Update Modal -->
+<div id="statusModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div class="card" style="width:90%;max-width:400px;padding:2rem">
+    <h3 id="modalName" style="margin-bottom:1rem"></h3>
+    <div class="form-group">
+      <label>Update Status</label>
+      <select id="newStatus" style="width:100%;padding:.75rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+        <option>Submitted</option>
+        <option>Under Review</option>
+        <option>Approved</option>
+        <option>Rejected</option>
+        <option>Disbursed</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:1rem;margin-top:1rem">
+      <button class="btn btn-outline" onclick="closeModal()" style="flex:1">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStatus()" style="flex:1">Save</button>
     </div>
   </div>
 </div>
 
-<script src="app.js"></script>
-<script>
-if (!requireAdmin()) throw '';
+<script type="module">
+import { auth, db, onAuthStateChanged, collection, getDocs, doc, updateDoc, query, orderBy } from './firebase.js';
 
-let selectedAppId = null;
+// Admin guard
+const role = localStorage.getItem('loanit_role');
+if (role !== 'admin') window.location.href = 'login.html';
 
-function switchTab(name) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('content-' + name).classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
-  document.querySelectorAll('.sidebar-link').forEach((l,i) => {
-    const tabs = ['overview','applications','users','analytics'];
-    l.classList.toggle('active', tabs[i] === name);
-  });
-  if (name === 'applications') renderAppsTable();
-  if (name === 'users') renderUsers();
-  if (name === 'analytics') renderAnalytics();
+window.doLogout = function() { localStorage.clear(); window.location.href = 'login.html'; };
+
+let allApps = [];
+let editId = null;
+
+window.loadApplications = async function() {
+  try {
+    const snap = await getDocs(collection(db, 'applications'));
+    allApps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderStats(allApps);
+    renderTable(allApps);
+  } catch(e) {
+    document.getElementById('adminAppsList').innerHTML = `<p style="color:#ef4444;padding:1rem">Firebase error: ${e.message}</p>`;
+  }
+};
+
+function renderStats(apps) {
+  document.getElementById('aTotal').textContent = apps.length;
+  document.getElementById('aPending').textContent = apps.filter(a => ['Submitted','Under Review'].includes(a.status)).length;
+  document.getElementById('aApproved').textContent = apps.filter(a => a.status === 'Approved').length;
+  const total = apps.reduce((s,a) => s + parseFloat(a.loanAmount||0), 0);
+  document.getElementById('aAmount').textContent = '₹' + (total/100000).toFixed(1) + 'L';
 }
 
-function renderOverview() {
-  const apps = getApplications();
-  const users = getUsers();
-  const total = apps.length;
-  const pending = apps.filter(a => ['submitted','under_review','document_pending'].includes(a.status)).length;
-  const approved = apps.filter(a => ['approved','disbursed'].includes(a.status)).length;
-  const totalAmt = apps.reduce((s,a) => s + (a.amount||0), 0);
-
-  document.getElementById('adminStats').innerHTML = `
-    <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-num">${total}</div><div class="stat-label">Total Applications</div></div>
-    <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-num">${pending}</div><div class="stat-label">Pending Review</div></div>
-    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-num">${approved}</div><div class="stat-label">Approved</div></div>
-    <div class="stat-card blue"><div class="stat-icon">👥</div><div class="stat-num">${users.length}</div><div class="stat-label">Students</div></div>
-  `;
-
-  document.getElementById('recentApps').innerHTML = apps.slice(0,5).map(a => {
-    const [label, cls] = fmtStatus(a.status);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-weight:700;font-size:0.88rem">${a.studentName}</div>
-        <div style="font-size:0.75rem;color:var(--text3)">${a.bankName} · ${fmtDate(a.createdAt)}</div>
-      </div>
-      <div style="display:flex;gap:0.5rem;align-items:center">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:0.82rem;font-weight:700">${fmtCurrency(a.amount)}</span>
-        <span class="badge ${cls}">${label}</span>
-      </div>
-    </div>`;
-  }).join('') || '<div style="text-align:center;padding:2rem;color:var(--text3)">No applications yet. Click "Load Demo Data".</div>';
-
-  // Status chart
-  const statuses = ['submitted','under_review','document_pending','approved','rejected','disbursed'];
-  const statusColors = { submitted:'#1a56db',under_review:'#f59e0b',document_pending:'#f97316',approved:'#10b981',rejected:'#ef4444',disbursed:'#0ea5e9' };
-  const maxCount = Math.max(1, ...statuses.map(s => apps.filter(a=>a.status===s).length));
-  document.getElementById('statusChart').innerHTML = statuses.map(s => {
-    const count = apps.filter(a => a.status === s).length;
-    const pct = Math.round(count / maxCount * 100);
-    const [label] = fmtStatus(s);
-    return `<div class="chart-bar-row">
-      <div class="chart-bar-label">${label}</div>
-      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:${statusColors[s]}">${count > 0 ? count : ''}</div></div>
-    </div>`;
-  }).join('');
+function renderTable(apps) {
+  if (!apps.length) {
+    document.getElementById('adminAppsList').innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>No applications found.</p></div>`;
+    return;
+  }
+  const statusColor = { 'Submitted':'#f59e0b','Under Review':'#3b82f6','Approved':'#10b981','Rejected':'#ef4444','Disbursed':'#8b5cf6' };
+  document.getElementById('adminAppsList').innerHTML = `
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:700px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Applicant</th>
+        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Course / College</th>
+        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Bank</th>
+        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Amount</th>
+        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Status</th>
+        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Action</th>
+      </tr></thead>
+      <tbody>${apps.map(a => `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:.75rem .5rem">
+            <div style="font-weight:600">${a.fullName}</div>
+            <div style="font-size:.78rem;color:var(--text-muted)">${a.mobile || a.userEmail || ''}</div>
+          </td>
+          <td style="padding:.75rem .5rem">
+            <div style="font-size:.9rem">${a.course}</div>
+            <div style="font-size:.78rem;color:var(--text-muted)">${a.college}</div>
+          </td>
+          <td style="padding:.75rem .5rem;font-size:.9rem">${a.bank}</td>
+          <td style="padding:.75rem .5rem;font-weight:700">₹${Number(a.loanAmount).toLocaleString('en-IN')}</td>
+          <td style="padding:.75rem .5rem">
+            <span style="background:${statusColor[a.status]||'#6b7280'}22;color:${statusColor[a.status]||'#6b7280'};padding:.2rem .6rem;border-radius:99px;font-size:.78rem;font-weight:700">${a.status}</span>
+          </td>
+          <td style="padding:.75rem .5rem">
+            <button onclick="openModal('${a.id}','${a.fullName}','${a.status}')" style="padding:.35rem .8rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.82rem">Update</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
 }
 
-function renderAppsTable() {
-  const search = document.getElementById('appSearch').value.toLowerCase();
-  const statusF = document.getElementById('appStatusFilter').value;
-  const bankF   = document.getElementById('appBankFilter').value;
-  let apps = getApplications().filter(a => {
-    const matchS = !search || a.studentName?.toLowerCase().includes(search) || a.id?.toLowerCase().includes(search) || a.bankName?.toLowerCase().includes(search);
-    const matchSt = !statusF || a.status === statusF;
-    const matchB  = !bankF   || a.bankId  === bankF;
-    return matchS && matchSt && matchB;
-  });
+window.filterApps = function() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  const bank = document.getElementById('bankFilter').value;
+  const filtered = allApps.filter(a =>
+    (!search || a.fullName?.toLowerCase().includes(search) || a.college?.toLowerCase().includes(search)) &&
+    (!status || a.status === status) &&
+    (!bank || a.bank === bank)
+  );
+  renderTable(filtered);
+};
 
-  document.getElementById('appsTableBody').innerHTML = apps.length === 0
-    ? '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3)">No applications found. Try "Load Demo Data" button.</td></tr>'
-    : apps.map(a => {
-      const [label, cls] = fmtStatus(a.status);
-      return `<tr>
-        <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;color:var(--blue)">${a.id?.slice(-8)}</span></td>
-        <td><div style="font-weight:600">${a.studentName}</div><div style="font-size:0.75rem;color:var(--text3)">${a.email}</div></td>
-        <td>${a.bankName}</td>
-        <td style="font-family:'JetBrains Mono',monospace;font-weight:700">${fmtCurrency(a.amount)}</td>
-        <td style="font-size:0.78rem;color:var(--text3)">${fmtDate(a.createdAt)}</td>
-        <td><span class="badge ${cls}">${label}</span></td>
-        <td>
-          <div style="display:flex;gap:0.35rem;flex-wrap:wrap">
-            <button class="action-btn action-review"  onclick="openStatusModal('${a.id}')">✏️ Update</button>
-            <button class="action-btn action-approve" onclick="quickUpdate('${a.id}','approved','Loan approved by admin.')">✅ Approve</button>
-            <button class="action-btn action-reject"  onclick="quickUpdate('${a.id}','rejected','Application rejected.')">❌ Reject</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
-}
+window.openModal = function(id, name, status) {
+  editId = id;
+  document.getElementById('modalName').textContent = 'Update: ' + name;
+  document.getElementById('newStatus').value = status;
+  const m = document.getElementById('statusModal');
+  m.style.display = 'flex';
+};
 
-function renderUsers() {
-  const users = getUsers();
-  const apps  = getApplications();
-  document.getElementById('userCount').textContent = users.length + ' students';
-  document.getElementById('usersTableBody').innerHTML = users.length === 0
-    ? '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text3)">No students registered yet.</td></tr>'
-    : users.map(u => {
-      const myApps = apps.filter(a => a.userId === u.id).length;
-      return `<tr>
-        <td><div style="font-weight:700">${u.name}</div></td>
-        <td>${u.email}</td>
-        <td>${u.phone || '—'}</td>
-        <td style="font-size:0.78rem;color:var(--text3)">${fmtDate(u.createdAt)}</td>
-        <td><span class="badge badge-blue">${myApps} app${myApps!==1?'s':''}</span></td>
-      </tr>`;
-    }).join('');
-}
+window.closeModal = function() {
+  document.getElementById('statusModal').style.display = 'none';
+};
 
-function renderAnalytics() {
-  const apps = getApplications();
-  const total = apps.length;
-  const totalAmt = apps.reduce((s,a) => s+(a.amount||0), 0);
-  const avgAmt = total ? Math.round(totalAmt / total) : 0;
-  const convRate = total ? Math.round(apps.filter(a=>['approved','disbursed'].includes(a.status)).length / total * 100) : 0;
+window.saveStatus = async function() {
+  const newStatus = document.getElementById('newStatus').value;
+  try {
+    await updateDoc(doc(db, 'applications', editId), { status: newStatus });
+    closeModal();
+    await loadApplications();
+  } catch(e) {
+    alert('Error updating: ' + e.message);
+  }
+};
 
-  document.getElementById('analyticsStats').innerHTML = `
-    <div class="stat-card blue"><div class="stat-num">${total}</div><div class="stat-label">Total Applications</div></div>
-    <div class="stat-card green"><div class="stat-num">${fmtCurrency(totalAmt)}</div><div class="stat-label">Total Loan Value</div></div>
-    <div class="stat-card orange"><div class="stat-num">${fmtCurrency(avgAmt)}</div><div class="stat-label">Average Loan Size</div></div>
-    <div class="stat-card blue"><div class="stat-num">${convRate}%</div><div class="stat-label">Approval Rate</div></div>
-  `;
+window.loadUsers = async function() {
+  document.getElementById('usersSection').style.display = 'block';
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    const users = snap.docs.map(d => d.data());
+    document.getElementById('usersList').innerHTML = users.length
+      ? `<table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid var(--border)">
+            <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Name</th>
+            <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Email</th>
+            <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Role</th>
+          </tr></thead>
+          <tbody>${users.map(u=>`<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.75rem">${u.name}</td>
+            <td style="padding:.75rem;color:var(--text-muted)">${u.email}</td>
+            <td style="padding:.75rem"><span style="background:rgba(26,86,219,0.15);color:var(--primary);padding:.2rem .6rem;border-radius:99px;font-size:.8rem">${u.role}</span></td>
+          </tr>`).join('')}</tbody>
+        </table>`
+      : '<p style="color:var(--text-muted);padding:1rem">No registered users yet.</p>';
+  } catch(e) {
+    document.getElementById('usersList').innerHTML = `<p style="color:#ef4444">Error: ${e.message}</p>`;
+  }
+};
 
-  const bankCounts = {};
-  apps.forEach(a => { bankCounts[a.bankName || 'Unknown'] = (bankCounts[a.bankName||'Unknown']||0)+1; });
-  const maxB = Math.max(1, ...Object.values(bankCounts));
-  const BCOLORS = ['#1a56db','#10b981','#f59e0b','#7c3aed','#ef4444','#0ea5e9'];
-  document.getElementById('bankChart').innerHTML = Object.entries(bankCounts).sort((a,b)=>b[1]-a[1]).map(([name,cnt],i) => `
-    <div class="chart-bar-row">
-      <div class="chart-bar-label" style="font-size:0.72rem">${name.split(' ').slice(0,2).join(' ')}</div>
-      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(cnt/maxB*100)}%;background:${BCOLORS[i%BCOLORS.length]}">${cnt}</div></div>
-    </div>`).join('') || '<div style="text-align:center;padding:2rem;color:var(--text3)">No data</div>';
-
-  const brackets = [
-    { label: 'Under ₹5L',  fn: a => a.amount < 500000 },
-    { label: '₹5L–₹10L',  fn: a => a.amount >= 500000 && a.amount < 1000000 },
-    { label: '₹10L–₹20L', fn: a => a.amount >= 1000000 && a.amount < 2000000 },
-    { label: 'Above ₹20L', fn: a => a.amount >= 2000000 },
-  ];
-  const maxAmt = Math.max(1, ...brackets.map(b => apps.filter(b.fn).length));
-  document.getElementById('amountChart').innerHTML = brackets.map((b,i) => {
-    const cnt = apps.filter(b.fn).length;
-    return `<div class="chart-bar-row">
-      <div class="chart-bar-label">${b.label}</div>
-      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(cnt/maxAmt*100)}%;background:${BCOLORS[i]}">${cnt}</div></div>
-    </div>`;
-  }).join('');
-}
-
-function openStatusModal(appId) {
-  selectedAppId = appId;
-  const app = getApplications().find(a => a.id === appId);
-  if (!app) return;
-  const [label] = fmtStatus(app.status);
-  document.getElementById('modalAppInfo').innerHTML = `<strong>${app.studentName}</strong> · ${app.bankName} · ${fmtCurrency(app.amount)}<br><span style="color:var(--text2)">Current: ${label}</span>`;
-  document.getElementById('newStatus').value = app.status;
-  document.getElementById('statusNote').value = '';
-  document.getElementById('statusModal').classList.add('open');
-}
-function closeStatusModal() { document.getElementById('statusModal').classList.remove('open'); selectedAppId = null; }
-
-function confirmStatusUpdate() {
-  if (!selectedAppId) return;
-  const status = document.getElementById('newStatus').value;
-  const note   = document.getElementById('statusNote').value;
-  updateAppStatus(selectedAppId, status, note);
-  closeStatusModal();
-  showToast('✅ Application status updated!');
-  renderOverview();
-  renderAppsTable();
-}
-
-function quickUpdate(appId, status, note) {
-  updateAppStatus(appId, status, note);
-  showToast('✅ Status updated to ' + status);
-  renderOverview();
-  renderAppsTable();
-}
-
-function seedDemoData() {
-  const demoUsers = [
-    { id:'USR001', name:'Rahul Kumar Sharma', email:'rahul@demo.com', phone:'9876543210', role:'student', createdAt: new Date(Date.now()-7*86400000).toISOString(), password:'demo123' },
-    { id:'USR002', name:'Priya Singh',         email:'priya@demo.com', phone:'9876543211', role:'student', createdAt: new Date(Date.now()-5*86400000).toISOString(), password:'demo123' },
-    { id:'USR003', name:'Arjun Mehta',         email:'arjun@demo.com', phone:'9876543212', role:'student', createdAt: new Date(Date.now()-3*86400000).toISOString(), password:'demo123' },
-  ];
-  const existing = getUsers();
-  const merged = [...existing];
-  demoUsers.forEach(u => { if (!merged.find(x=>x.email===u.email)) merged.push(u); });
-  saveUsers(merged);
-
-  const demoApps = [
-    { id:'APP001', userId:'USR001', studentName:'Rahul Kumar Sharma', email:'rahul@demo.com', phone:'9876543210', bankId:'sbi', bankName:'State Bank of India', amount:850000, rate:8.15, tenure:120, course:'B.Tech CSE', college:'IIT Delhi', status:'under_review', createdAt: new Date(Date.now()-6*86400000).toISOString(), statusHistory:[{status:'submitted',date:new Date(Date.now()-6*86400000).toISOString(),note:'Application received'},{status:'under_review',date:new Date(Date.now()-4*86400000).toISOString(),note:'Documents under review'}] },
-    { id:'APP002', userId:'USR002', studentName:'Priya Singh',        email:'priya@demo.com', phone:'9876543211', bankId:'hdfc', bankName:'HDFC Bank',           amount:1200000, rate:9.50, tenure:120, course:'MBA Finance', college:'IIM Ahmedabad', status:'approved', createdAt: new Date(Date.now()-5*86400000).toISOString(), statusHistory:[{status:'submitted',date:new Date(Date.now()-5*86400000).toISOString(),note:'Application received'},{status:'under_review',date:new Date(Date.now()-3*86400000).toISOString(),note:'Reviewing'},{status:'approved',date:new Date(Date.now()-1*86400000).toISOString(),note:'Loan approved! Disbursement in 3 days.'}] },
-    { id:'APP003', userId:'USR003', studentName:'Arjun Mehta',        email:'arjun@demo.com', phone:'9876543212', bankId:'axis', bankName:'Axis Bank',           amount:2500000, rate:13.70, tenure:144, course:'MS Computer Science', college:'Stanford University', status:'document_pending', createdAt: new Date(Date.now()-2*86400000).toISOString(), statusHistory:[{status:'submitted',date:new Date(Date.now()-2*86400000).toISOString(),note:'Application received'},{status:'document_pending',date:new Date(Date.now()-1*86400000).toISOString(),note:'Please upload I-20 form and visa documents'}] },
-    { id:'APP004', userId:'USR001', studentName:'Rahul Kumar Sharma', email:'rahul@demo.com', phone:'9876543210', bankId:'bob', bankName:'Bank of Baroda',       amount:600000, rate:8.35, tenure:120, course:'B.Tech CSE', college:'IIT Delhi', status:'submitted', createdAt: new Date().toISOString(), statusHistory:[{status:'submitted',date:new Date().toISOString(),note:'Application received'}] },
-  ];
-  const existingApps = getApplications();
-  const mergedApps = [...demoApps.filter(d => !existingApps.find(a=>a.id===d.id)), ...existingApps];
-  saveApplications(mergedApps);
-  showToast('🌱 Demo data loaded! Refresh to see updates.', 'success');
-  setTimeout(() => { renderOverview(); renderAppsTable(); renderUsers(); }, 300);
-}
-
-renderOverview();
+loadApplications();
 </script>
 </body>
 </html>
