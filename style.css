@@ -47,7 +47,7 @@ body {
   border-bottom: 1px solid var(--border);
   z-index: 1000;
   padding: 0 2rem;
-  height: 64px;
+  height: 72px;
   display: flex; align-items: center; justify-content: space-between;
 }
 .nav-brand {
@@ -56,6 +56,13 @@ body {
 }
 .nav-logo {
   display: none;
+}
+
+/* Logo image size - change here to update all pages at once */
+.nav-brand img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
 }
 .nav-name { font-size: 1.2rem; font-weight: 800; color: var(--navy); }
 .nav-name span { color: var(--blue); }
