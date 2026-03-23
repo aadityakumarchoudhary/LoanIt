@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel – LoanIt</title>
   <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" type="image/jpg" href="logo.jpg"/>
   <style>
     .admin-sidebar { background: var(--navy); border-color: rgba(255,255,255,0.08); }
     .admin-sidebar .sidebar-section { color: rgba(255,255,255,0.35); }
@@ -35,10 +36,7 @@
 <body>
 
 <nav class="navbar" style="background:var(--navy);border-bottom-color:rgba(255,255,255,0.1)">
-  <a href="index.html" class="nav-brand">
-    <div class="nav-logo">L</div>
-    <span class="nav-name" style="color:white">Loan<span style="-webkit-text-fill-color:var(--cyan)">It</span> <span style="font-size:0.7rem;background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:99px;color:rgba(255,255,255,0.8);font-weight:600">ADMIN</span></span>
-  </a>
+  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem"><img src="logo.jpg" style="height:40px;width:auto;object-fit:contain"/><span style="font-size:0.75rem;background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:99px;color:rgba(255,255,255,0.85);font-weight:700;margin-left:0.25rem">ADMIN</span></a>
   <div class="nav-actions">
     <span style="font-size:0.88rem;color:rgba(255,255,255,0.6)">Logged in as Admin</span>
     <button onclick="logout()" class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)">Logout</button>
