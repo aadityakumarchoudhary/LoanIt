@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Eligibility Check – LoanIt</title>
+<link rel="stylesheet" href="style.css"/>
+<link rel="icon" href="logo.jpg" type="image/jpeg"/>
+<style>
+  .elig-layout { max-width: 900px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+
+  .quiz-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem; box-shadow: var(--shadow-lg); }
+
+  .progress-track { height: 6px; background: var(--border); border-radius: 99px; margin-bottom: 2rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); border-radius: 99px; transition: width 0.4s ease; }
+
+  .q-step { display: none; animation: fadeIn 0.3s ease; }
+  .q-step.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+  .q-number { font-size: 0.72rem; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+  .q-text { font-size: 1.4rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem; line-height: 1.3; }
+  .q-hint { font-size: 0.85rem; color: var(--text3); margin-bottom: 1.75rem; }
+
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .option-btn {
+    padding: 1rem 1.25rem; background: var(--surface2);
+    border: 2px solid var(--border); border-radius: 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 600; color: var(--text);
+    cursor: pointer; transition: all 0.2s; text-align: left;
+  }
+  .option-btn:hover { border-color: var(--blue); background: var(--blue-pale); color: var(--blue); }
+  .option-btn.selected { border-color: var(--blue); background: var(--blue-pale); color: var(--blue); }
+  .option-icon { font-size: 1.3rem; display: block; margin-bottom: 0.3rem; }
+
+  .q-nav { display: flex; justify-content: space-between; align-items: center; }
+
+  /* Number input questions */
+  .number-input-group { margin-bottom: 2rem; }
+  .number-input-group input {
+    width: 100%; padding: 1rem 1.25rem;
+    border: 2px solid var(--border); border-radius: 12px;
+    font-size: 1.1rem; font-weight: 700; color: var(--navy);
+    background: var(--surface2); outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .number-input-group input:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+
+  /* RESULT */
+  .result-card { display: none; }
+  .result-header { text-align: center; padding: 2rem; background: linear-gradient(135deg, var(--navy), var(--blue2)); border-radius: var(--radius); margin-bottom: 1.5rem; color: white; }
+  .result-score { font-size: 4rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .result-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .result-sub { opacity: 0.7; font-size: 0.9rem; }
+
+  .bank-eligibility-grid { display: grid; gap: 0.75rem; }
+  .bank-elig-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border: 1.5px solid var(--border); border-radius: 12px; }
+  .bank-elig-card.eligible { border-color: var(--green); background: var(--green-pale); }
+  .bank-elig-card.maybe { border-color: var(--orange); background: var(--orange-pale); }
+  .bank-elig-left { display: flex; align-items: center; gap: 0.75rem; }
+  .bank-elig-icon { font-size: 1.5rem; }
+  .bank-elig-name { font-weight: 700; font-size: 0.9rem; }
+  .bank-elig-reason { font-size: 0.75rem; color: var(--text3); }
+  .elig-badge { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.72rem; font-weight: 700; }
+  .elig-badge.yes { background: var(--green-pale); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .elig-badge.maybe { background: var(--orange-pale); color: #d97706; border: 1px solid rgba(245,158,11,0.3); }
+
+  .schemes-result { margin-top: 1rem; }
+  .scheme-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.85rem; background: var(--blue-pale); color: var(--blue); border-radius: 99px; font-size: 0.78rem; font-weight: 600; margin: 0.25rem; border: 1px solid rgba(26,86,219,0.2); }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem">
+    <img src="logo.jpg" style="height:40px;width:auto;object-fit:contain"/>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="compare.html" class="nav-link">Compare Banks</a>
+    <a href="emi.html" class="nav-link">EMI Calculator</a>
+  </div>
+  <div class="nav-actions">
+    <a href="login.html" class="btn btn-outline">Login</a>
+    <a href="register.html" class="btn btn-primary">Apply Now →</a>
+  </div>
+</nav>
+
+<div class="elig-layout">
+  <div style="text-align:center;margin-bottom:2.5rem">
+    <div style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--blue-pale);border:1px solid rgba(26,86,219,0.2);border-radius:99px;padding:0.4rem 1rem;font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:1rem">
+      🔍 Free Eligibility Check
+    </div>
+    <h1 style="font-size:2.5rem;font-weight:800;color:var(--navy);letter-spacing:-1px">Check Your Loan Eligibility</h1>
+    <p style="color:var(--text3);margin-top:0.5rem">Answer 6 quick questions — no credit check, no registration needed</p>
+  </div>
+
+  <div class="quiz-card">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <!-- Q1 -->
+    <div class="q-step active" id="q1">
+      <div class="q-number">Question 1 of 6</div>
+      <div class="q-text">What level of education are you pursuing?</div>
+      <div class="q-hint">Your course type affects the maximum loan amount and eligibility criteria.</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption('course','undergraduate', this)">
+          <span class="option-icon">🎓</span>Undergraduate (B.Tech, BBA, etc.)
+        </button>
+        <button class="option-btn" onclick="selectOption('course','postgraduate', this)">
+          <span class="option-icon">📚</span>Postgraduate (MBA, M.Tech, etc.)
+        </button>
+        <button class="option-btn" onclick="selectOption('course','professional', this)">
+          <span class="option-icon">⚕️</span>Professional (MBBS, LLB, CA, etc.)
+        </button>
+        <button class="option-btn" onclick="selectOption('course','diploma', this)">
+          <span class="option-icon">📋</span>Diploma / Vocational
+        </button>
+      </div>
+      <div class="q-nav">
+        <div></div>
+        <button class="btn btn-primary" onclick="nextQ(1)" id="next1" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-step" id="q2">
+      <div class="q-number">Question 2 of 6</div>
+      <div class="q-text">What is your academic performance?</div>
+      <div class="q-hint">Banks consider your 10th/12th marks as an indicator of repayment intent.</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption('marks','excellent', this)">
+          <span class="option-icon">🌟</span>Above 80% / 8+ CGPA
+        </button>
+        <button class="option-btn" onclick="selectOption('marks','good', this)">
+          <span class="option-icon">👍</span>60–80% / 6–8 CGPA
+        </button>
+        <button class="option-btn" onclick="selectOption('marks','average', this)">
+          <span class="option-icon">📊</span>50–60% / 5–6 CGPA
+        </button>
+        <button class="option-btn" onclick="selectOption('marks','below', this)">
+          <span class="option-icon">📈</span>Below 50%
+        </button>
+      </div>
+      <div class="q-nav">
+        <button class="btn btn-outline" onclick="prevQ(2)">← Back</button>
+        <button class="btn btn-primary" onclick="nextQ(2)" id="next2" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-step" id="q3">
+      <div class="q-number">Question 3 of 6</div>
+      <div class="q-text">How much loan amount do you need?</div>
+      <div class="q-hint">Enter approximate amount in lakhs (1 lakh = ₹1,00,000)</div>
+      <div class="number-input-group">
+        <input type="number" id="loanAmtInput" placeholder="e.g. 5 (for ₹5 lakhs)" min="0.5" max="100" step="0.5" oninput="selectOption('amount', this.value, null)"/>
+      </div>
+      <div class="q-nav">
+        <button class="btn btn-outline" onclick="prevQ(3)">← Back</button>
+        <button class="btn btn-primary" onclick="nextQ(3)" id="next3" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-step" id="q4">
+      <div class="q-number">Question 4 of 6</div>
+      <div class="q-text">What is your co-applicant's annual income?</div>
+      <div class="q-hint">Usually a parent or guardian. This is the biggest factor for eligibility.</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption('income','below4.5', this)">
+          <span class="option-icon">🏠</span>Below ₹4.5 Lakh/year
+        </button>
+        <button class="option-btn" onclick="selectOption('income','4.5to9', this)">
+          <span class="option-icon">💼</span>₹4.5L – ₹9L/year
+        </button>
+        <button class="option-btn" onclick="selectOption('income','9to15', this)">
+          <span class="option-icon">🏢</span>₹9L – ₹15L/year
+        </button>
+        <button class="option-btn" onclick="selectOption('income','above15', this)">
+          <span class="option-icon">💰</span>Above ₹15L/year
+        </button>
+      </div>
+      <div class="q-nav">
+        <button class="btn btn-outline" onclick="prevQ(4)">← Back</button>
+        <button class="btn btn-primary" onclick="nextQ(4)" id="next4" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q-step" id="q5">
+      <div class="q-number">Question 5 of 6</div>
+      <div class="q-text">Do you have collateral to offer?</div>
+      <div class="q-hint">Property, FD, or other assets. Loans above ₹7.5L usually require collateral.</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption('collateral','property', this)">
+          <span class="option-icon">🏠</span>Yes — Property / Land
+        </button>
+        <button class="option-btn" onclick="selectOption('collateral','fd', this)">
+          <span class="option-icon">💳</span>Yes — FD / Bonds / Insurance
+        </button>
+        <button class="option-btn" onclick="selectOption('collateral','none_small', this)">
+          <span class="option-icon">✅</span>No collateral — loan is under ₹7.5L
+        </button>
+        <button class="option-btn" onclick="selectOption('collateral','none_large', this)">
+          <span class="option-icon">❓</span>No collateral — loan is above ₹7.5L
+        </button>
+      </div>
+      <div class="q-nav">
+        <button class="btn btn-outline" onclick="prevQ(5)">← Back</button>
+        <button class="btn btn-primary" onclick="nextQ(5)" id="next5" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q-step" id="q6">
+      <div class="q-number">Question 6 of 6</div>
+      <div class="q-text">Which community do you belong to?</div>
+      <div class="q-hint">Certain communities are eligible for additional government subsidies.</div>
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption('community','general', this)">
+          <span class="option-icon">👤</span>General / OBC
+        </button>
+        <button class="option-btn" onclick="selectOption('community','sc_st', this)">
+          <span class="option-icon">🌿</span>SC / ST
+        </button>
+        <button class="option-btn" onclick="selectOption('community','minority', this)">
+          <span class="option-icon">☪️</span>Minority (Muslim, Sikh, Christian, etc.)
+        </button>
+        <button class="option-btn" onclick="selectOption('community','ebc_obc', this)">
+          <span class="option-icon">📋</span>EBC / OBC (going abroad)
+        </button>
+      </div>
+      <div class="q-nav">
+        <button class="btn btn-outline" onclick="prevQ(6)">← Back</button>
+        <button class="btn btn-primary" onclick="showResult()" id="next6" disabled>Check Eligibility 🎯</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="resultSection" style="display:none">
+      <div class="result-header" id="resultHeader">
+        <div class="result-score" id="resultScore">87%</div>
+        <div class="result-title" id="resultTitle">High Eligibility!</div>
+        <div class="result-sub" id="resultSub">You are likely eligible for education loans from 5 banks</div>
+      </div>
+
+      <div style="margin-bottom:1.5rem">
+        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:1rem">Bank-wise Eligibility</h3>
+        <div class="bank-eligibility-grid" id="bankEligGrid"></div>
+      </div>
+
+      <div id="schemesSection" style="display:none;margin-bottom:1.5rem">
+        <h3 style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">🎁 Government Schemes You May Qualify For</h3>
+        <div id="schemePills"></div>
+      </div>
+
+      <div style="background:var(--blue-pale);border:1px solid rgba(26,86,219,0.2);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+        <div style="font-weight:700;margin-bottom:0.4rem">📋 Next Steps</div>
+        <div style="font-size:0.85rem;color:var(--text2)">LoanIt will submit one application to all eligible banks and track your loan for free. No bank visits, no paperwork confusion.</div>
+      </div>
+
+      <div style="display:flex;gap:1rem">
+        <a href="register.html" class="btn btn-primary btn-lg" style="flex:1;justify-content:center">Apply for Free →</a>
+        <button class="btn btn-outline btn-lg" onclick="restartQuiz()" style="flex:1">Start Over</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const answers = {};
+const totalQ = 6;
+
+function selectOption(key, value, btn) {
+  answers[key] = value;
+  const q = parseInt(document.querySelector('.q-step.active').id.replace('q', ''));
+  if (btn) {
+    btn.closest('.options-grid').querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+  const nextBtn = document.getElementById('next' + q);
+  if (nextBtn) nextBtn.disabled = false;
+  if (key === 'amount') {
+    document.getElementById('next3').disabled = !value || isNaN(value);
+  }
+}
+
+function nextQ(current) {
+  document.getElementById('q' + current).classList.remove('active');
+  document.getElementById('q' + (current + 1)).classList.add('active');
+  updateProgress(current + 1);
+}
+
+function prevQ(current) {
+  document.getElementById('q' + current).classList.remove('active');
+  document.getElementById('q' + (current - 1)).classList.add('active');
+  updateProgress(current - 1);
+}
+
+function updateProgress(step) {
+  document.getElementById('progressFill').style.width = ((step - 1) / totalQ * 100) + '%';
+}
+
+function showResult() {
+  document.getElementById('q6').classList.remove('active');
+  document.getElementById('progressFill').style.width = '100%';
+
+  const amt = parseFloat(answers.amount || 5);
+  const income = answers.income;
+  const collateral = answers.collateral;
+  const marks = answers.marks;
+  const community = answers.community;
+
+  // Calculate score
+  let score = 50;
+  if (marks === 'excellent') score += 20;
+  else if (marks === 'good') score += 10;
+  else if (marks === 'average') score += 0;
+  else score -= 10;
+
+  if (income === 'above15') score += 20;
+  else if (income === '9to15') score += 15;
+  else if (income === '4.5to9') score += 8;
+  else score += 5;
+
+  if (collateral === 'property') score += 15;
+  else if (collateral === 'fd') score += 10;
+  else if (collateral === 'none_small') score += 5;
+
+  if (amt <= 7.5) score = Math.min(score + 5, 98);
+  score = Math.min(score, 98);
+
+  const resultHeader = document.getElementById('resultHeader');
+  const scoreEl = document.getElementById('resultScore');
+  const titleEl = document.getElementById('resultTitle');
+  const subEl = document.getElementById('resultSub');
+
+  scoreEl.textContent = score + '%';
+  if (score >= 80) {
+    titleEl.textContent = '🎉 Excellent Eligibility!';
+    subEl.textContent = 'You are very likely to get approved by multiple banks';
+    resultHeader.style.background = 'linear-gradient(135deg, #065f46, #059669)';
+  } else if (score >= 60) {
+    titleEl.textContent = '👍 Good Eligibility';
+    subEl.textContent = 'You qualify for most education loans with LoanIt';
+    resultHeader.style.background = 'linear-gradient(135deg, #1e3a8a, #1a56db)';
+  } else {
+    titleEl.textContent = '📋 Moderate Eligibility';
+    subEl.textContent = 'You may qualify for some loans — LoanIt can help find the best option';
+    resultHeader.style.background = 'linear-gradient(135deg, #92400e, #d97706)';
+  }
+
+  // Bank eligibility
+  const banks = [
+    { name: 'State Bank of India', icon: '🏦', reason: 'Most popular, 0 processing fee', eligible: marks !== 'below' },
+    { name: 'Union Bank', icon: '🏛️', reason: 'Lowest rate 8.05%', eligible: marks !== 'below' && income !== 'below4.5' },
+    { name: 'Bank of Baroda', icon: '🏦', reason: 'Highest limit up to ₹80L', eligible: collateral !== 'none_large' || amt <= 15 },
+    { name: 'Punjab National Bank', icon: '🌟', reason: 'Great schemes for SC/ST', eligible: marks !== 'below' },
+    { name: 'HDFC Bank', icon: '💎', reason: 'Fastest approval 10 days', eligible: income !== 'below4.5' },
+    { name: 'Axis Bank', icon: '⚡', reason: 'Best for large amounts', eligible: collateral === 'property' || collateral === 'fd' },
+  ];
+
+  document.getElementById('bankEligGrid').innerHTML = banks.map(b => `
+    <div class="bank-elig-card ${b.eligible ? 'eligible' : 'maybe'}">
+      <div class="bank-elig-left">
+        <div class="bank-elig-icon">${b.icon}</div>
+        <div>
+          <div class="bank-elig-name">${b.name}</div>
+          <div class="bank-elig-reason">${b.reason}</div>
+        </div>
+      </div>
+      <span class="elig-badge ${b.eligible ? 'yes' : 'maybe'}">${b.eligible ? '✅ Eligible' : '⚠️ Possible'}</span>
+    </div>
+  `).join('');
+
+  // Schemes
+  const schemes = [];
+  if (income === 'below4.5') schemes.push('🏛️ CSIS Interest Subsidy');
+  if (community === 'minority') schemes.push('✈️ Padho Pardesh');
+  if (community === 'ebc_obc') schemes.push('📋 Dr. Ambedkar Scheme');
+  if (community === 'sc_st') schemes.push('🌿 SC/ST Concession 0.5%');
+
+  if (schemes.length > 0) {
+    document.getElementById('schemesSection').style.display = 'block';
+    document.getElementById('schemePills').innerHTML = schemes.map(s => `<span class="scheme-pill">${s}</span>`).join('');
+  }
+
+  document.getElementById('resultSection').style.display = 'block';
+}
+
+function restartQuiz() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll('.q-step').forEach(q => q.classList.remove('active'));
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('[id^="next"]').forEach(b => b.disabled = true);
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('q1').classList.add('active');
+  document.getElementById('progressFill').style.width = '0%';
+  if (document.getElementById('loanAmtInput')) document.getElementById('loanAmtInput').value = '';
+}
+</script>
+</body>
+</html>

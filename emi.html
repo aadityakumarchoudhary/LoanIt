@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EMI Calculator – LoanIt</title>
+<link rel="stylesheet" href="style.css"/>
+<link rel="icon" href="logo.jpg" type="image/jpeg"/>
+<style>
+  .emi-layout { max-width: 1200px; margin: 0 auto; padding: 5.5rem 1.5rem 3rem; }
+
+  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+
+  .calc-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); }
+
+  .range-group { margin-bottom: 1.75rem; }
+  .range-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .range-label { font-size: 0.85rem; font-weight: 600; color: var(--text2); }
+  .range-value {
+    font-size: 1.1rem; font-weight: 800; color: var(--blue);
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--blue-pale); padding: 0.2rem 0.7rem; border-radius: 8px;
+  }
+  input[type="range"] {
+    width: 100%; height: 6px; -webkit-appearance: none;
+    background: var(--border); border-radius: 99px; outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    border-radius: 50%; background: var(--blue);
+    box-shadow: 0 2px 8px rgba(26,86,219,0.4); cursor: pointer;
+    transition: transform 0.2s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .range-minmax { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text3); margin-top: 0.35rem; }
+
+  /* RESULT DISPLAY */
+  .emi-result-hero {
+    text-align: center; padding: 2rem;
+    background: linear-gradient(135deg, var(--navy), var(--blue2));
+    border-radius: var(--radius); margin-bottom: 1.5rem; color: white;
+  }
+  .emi-result-label { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+  .emi-result-amount { font-size: 3rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; margin: 0.25rem 0; }
+  .emi-result-sub { font-size: 0.82rem; opacity: 0.6; }
+
+  .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .breakdown-item { background: var(--surface2); border-radius: 12px; padding: 1rem; text-align: center; }
+  .breakdown-val { font-size: 1.1rem; font-weight: 800; color: var(--navy); font-family: 'JetBrains Mono', monospace; }
+  .breakdown-lbl { font-size: 0.72rem; color: var(--text3); margin-top: 0.2rem; }
+
+  /* Donut chart */
+  .donut-wrapper { display: flex; align-items: center; justify-content: center; gap: 2rem; padding: 1rem 0; }
+  .donut-legend { display: flex; flex-direction: column; gap: 0.75rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Year-wise table */
+  .year-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .year-table th { background: var(--navy); color: white; padding: 0.6rem 0.75rem; text-align: left; font-size: 0.72rem; }
+  .year-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .year-table tr:hover td { background: var(--blue-pale); }
+
+  /* Bank compare */
+  .bank-emi-grid { display: grid; gap: 0.75rem; margin-top: 1rem; }
+  .bank-emi-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border-radius: 10px; padding: 0.85rem 1rem;
+    border: 1.5px solid transparent; transition: all 0.2s; cursor: pointer;
+  }
+  .bank-emi-row.best { border-color: var(--green); background: var(--green-pale); }
+  .bank-emi-row:hover { border-color: var(--blue); background: var(--blue-pale); }
+  .bank-emi-name { font-size: 0.88rem; font-weight: 600; }
+  .bank-emi-rate { font-size: 0.78rem; color: var(--text3); }
+  .bank-emi-amount { font-size: 1rem; font-weight: 800; color: var(--blue); font-family: 'JetBrains Mono', monospace; }
+  .bank-emi-savings { font-size: 0.72rem; color: var(--green); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .calc-grid { grid-template-columns: 1fr; }
+    .breakdown-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem">
+    <img src="logo.jpg" style="height:40px;width:auto;object-fit:contain"/>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="compare.html" class="nav-link">Compare Banks</a>
+    <a href="emi.html" class="nav-link active">EMI Calculator</a>
+  </div>
+  <div class="nav-actions">
+    <a href="register.html" class="btn btn-primary">Apply Now →</a>
+  </div>
+</nav>
+
+<div class="emi-layout">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">EMI Calculator</h1>
+      <p class="page-subtitle">Calculate your monthly installments and compare across all banks instantly</p>
+    </div>
+    <a href="register.html" class="btn btn-primary">Apply for Free →</a>
+  </div>
+
+  <div class="calc-grid">
+    <!-- LEFT: INPUTS -->
+    <div>
+      <div class="calc-card">
+        <h2 class="card-title" style="margin-bottom:1.5rem">Loan Details</h2>
+
+        <div class="range-group">
+          <div class="range-header">
+            <span class="range-label">Loan Amount</span>
+            <span class="range-value" id="amtDisplay">₹5,00,000</span>
+          </div>
+          <input type="range" id="loanAmt" min="50000" max="5000000" step="50000" value="500000" oninput="recalc()"/>
+          <div class="range-minmax"><span>₹50K</span><span>₹50L</span></div>
+        </div>
+
+        <div class="range-group">
+          <div class="range-header">
+            <span class="range-label">Interest Rate (per annum)</span>
+            <span class="range-value" id="rateDisplay">8.15%</span>
+          </div>
+          <input type="range" id="interestRate" min="6" max="18" step="0.05" value="8.15" oninput="recalc()"/>
+          <div class="range-minmax"><span>6%</span><span>18%</span></div>
+        </div>
+
+        <div class="range-group">
+          <div class="range-header">
+            <span class="range-label">Loan Tenure</span>
+            <span class="range-value" id="tenureDisplay">10 Years</span>
+          </div>
+          <input type="range" id="tenure" min="1" max="20" step="1" value="10" oninput="recalc()"/>
+          <div class="range-minmax"><span>1 yr</span><span>20 yrs</span></div>
+        </div>
+
+        <div class="range-group">
+          <div class="range-header">
+            <span class="range-label">Moratorium Period</span>
+            <span class="range-value" id="morDisplay">0 Years</span>
+          </div>
+          <input type="range" id="moratorium" min="0" max="7" step="1" value="0" oninput="recalc()"/>
+          <div class="range-minmax"><span>None</span><span>7 yrs</span></div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:0.4rem">Interest accrues during moratorium but no EMI is paid</div>
+        </div>
+
+        <div style="padding: 1rem; background: var(--blue-pale); border-radius: 10px; border: 1px solid rgba(26,86,219,0.15)">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--blue);margin-bottom:0.5rem">💡 Section 80E Tax Benefit</div>
+          <div style="font-size:0.8rem;color:var(--text2)">The entire interest paid on your education loan is deductible under Section 80E for up to 8 years — saving you ₹<span id="taxSaving" style="font-weight:700;color:var(--blue)">0</span> in taxes (30% bracket).</div>
+        </div>
+      </div>
+
+      <!-- BANK COMPARISON -->
+      <div class="calc-card" style="margin-top:1.5rem">
+        <h2 class="card-title">EMI Comparison Across Banks</h2>
+        <p style="font-size:0.82rem;color:var(--text3);margin-bottom:1rem">For your loan amount & tenure</p>
+        <div class="bank-emi-grid" id="bankEmiGrid"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="calc-card">
+        <div class="emi-result-hero">
+          <div class="emi-result-label">Monthly EMI</div>
+          <div class="emi-result-amount" id="emiAmount">₹0</div>
+          <div class="emi-result-sub">Starting after moratorium period</div>
+        </div>
+
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <div class="breakdown-val" id="principalDisp">₹0</div>
+            <div class="breakdown-lbl">Principal</div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-val" id="interestDisp">₹0</div>
+            <div class="breakdown-lbl">Total Interest</div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-val" id="totalDisp">₹0</div>
+            <div class="breakdown-lbl">Total Payable</div>
+          </div>
+        </div>
+
+        <!-- Donut Chart (SVG) -->
+        <div class="donut-wrapper">
+          <svg width="140" height="140" viewBox="0 0 140 140" id="donutChart">
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#e8eeff" stroke-width="22"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#1a56db" stroke-width="22"
+              stroke-dasharray="0 314" stroke-dashoffset="78.5" id="principalArc"
+              style="transition:stroke-dasharray 0.5s ease" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#0ea5e9" stroke-width="22"
+              stroke-dasharray="0 314" stroke-dashoffset="78.5" id="interestArc"
+              style="transition:stroke-dasharray 0.5s ease" transform="rotate(-90 70 70)"/>
+            <text x="70" y="66" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="Plus Jakarta Sans">Interest</text>
+            <text x="70" y="80" text-anchor="middle" font-size="14" fill="#0f172a" font-weight="700" id="interestPct" font-family="Plus Jakarta Sans">0%</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div><span>Principal Amount</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div><span>Total Interest</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YEAR-WISE BREAKDOWN -->
+      <div class="calc-card" style="margin-top:1.5rem">
+        <h2 class="card-title">Year-wise Amortisation</h2>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
+          <table class="year-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Principal Paid</th>
+                <th>Interest Paid</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody id="amortTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+const fmt = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+function recalc() {
+  const P = parseFloat(document.getElementById('loanAmt').value);
+  const annualRate = parseFloat(document.getElementById('interestRate').value);
+  const years = parseInt(document.getElementById('tenure').value);
+  const morYears = parseInt(document.getElementById('moratorium').value);
+
+  document.getElementById('amtDisplay').textContent = fmt(P);
+  document.getElementById('rateDisplay').textContent = annualRate.toFixed(2) + '%';
+  document.getElementById('tenureDisplay').textContent = years + (years === 1 ? ' Year' : ' Years');
+  document.getElementById('morDisplay').textContent = morYears + (morYears === 1 ? ' Year' : ' Years');
+
+  const r = annualRate / 12 / 100;
+  const n = years * 12;
+
+  // Interest during moratorium
+  const morInterest = P * r * morYears * 12;
+  const effectivePrincipal = P + morInterest;
+
+  // EMI on effective principal
+  let emi;
+  if (r === 0) {
+    emi = effectivePrincipal / n;
+  } else {
+    emi = effectivePrincipal * r * Math.pow(1+r, n) / (Math.pow(1+r, n) - 1);
+  }
+
+  const totalPayable = emi * n + morInterest;
+  const totalInterest = totalPayable - P;
+  const intPct = Math.round(totalInterest / totalPayable * 100);
+
+  document.getElementById('emiAmount').textContent = fmt(emi);
+  document.getElementById('principalDisp').textContent = fmt(P);
+  document.getElementById('interestDisp').textContent = fmt(totalInterest);
+  document.getElementById('totalDisp').textContent = fmt(totalPayable);
+  document.getElementById('taxSaving').textContent = Math.round(totalInterest * 0.3).toLocaleString('en-IN');
+  document.getElementById('interestPct').textContent = intPct + '%';
+
+  // Donut chart
+  const circumference = 2 * Math.PI * 50; // ~314
+  const principalAngle = (P / totalPayable) * circumference;
+  const interestAngle = (totalInterest / totalPayable) * circumference;
+  document.getElementById('principalArc').setAttribute('stroke-dasharray', `${principalAngle} ${circumference}`);
+  // Offset interest arc by principal angle
+  const interestOffset = -(principalAngle) + 0;
+  document.getElementById('interestArc').setAttribute('stroke-dasharray', `${interestAngle} ${circumference}`);
+  document.getElementById('interestArc').style.strokeDashoffset = -(principalAngle);
+
+  // Amortization table
+  let balance = effectivePrincipal;
+  let tableHTML = '';
+  for (let y = 1; y <= Math.min(years, 20); y++) {
+    let yearPrincipal = 0, yearInterest = 0;
+    for (let m = 0; m < 12; m++) {
+      const intPaid = balance * r;
+      const prinPaid = emi - intPaid;
+      yearInterest += intPaid;
+      yearPrincipal += prinPaid;
+      balance -= prinPaid;
+      if (balance < 0) balance = 0;
+    }
+    tableHTML += `<tr>
+      <td><strong>Year ${y}</strong></td>
+      <td style="color:var(--blue);font-weight:600">${fmt(yearPrincipal)}</td>
+      <td style="color:var(--text3)">${fmt(yearInterest)}</td>
+      <td style="font-weight:700">${fmt(Math.max(balance, 0))}</td>
+    </tr>`;
+  }
+  document.getElementById('amortTable').innerHTML = tableHTML;
+
+  // Bank comparison
+  const bankData = [
+    { name: 'Union Bank', rate: 8.05, color: '#10b981' },
+    { name: 'SBI', rate: 8.15, color: '#1a56db' },
+    { name: 'Bank of Baroda', rate: 8.35, color: '#f59e0b' },
+    { name: 'Punjab National Bank', rate: 8.45, color: '#ef4444' },
+    { name: 'HDFC Bank', rate: 9.50, color: '#0ea5e9' },
+    { name: 'Axis Bank', rate: 13.70, color: '#8b5cf6' },
+  ];
+
+  const emis = bankData.map(b => {
+    const br = b.rate / 12 / 100;
+    const bEmi = P * br * Math.pow(1+br, n) / (Math.pow(1+br, n) - 1);
+    return { ...b, emi: bEmi };
+  }).sort((a,b) => a.emi - b.emi);
+
+  const minEMI = emis[0].emi;
+  document.getElementById('bankEmiGrid').innerHTML = emis.map((b, i) => {
+    const savings = i > 0 ? `Save ${fmt(b.emi - minEMI)}/mo` : '✅ Best Rate';
+    return `<div class="bank-emi-row ${i === 0 ? 'best' : ''}">
+      <div>
+        <div class="bank-emi-name">${b.name}</div>
+        <div class="bank-emi-rate">${b.rate}% p.a.</div>
+      </div>
+      <div style="text-align:right">
+        <div class="bank-emi-amount" style="color:${b.color}">${fmt(Math.round(b.emi))}/mo</div>
+        <div class="bank-emi-savings">${savings}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+recalc();
+</script>
+</body>
+</html>
