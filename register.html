@@ -36,215 +36,217 @@
       </div>
     </div>
 
+    <!-- Step Indicators -->
     <div class="steps-bar">
-      <div class="step active" id="stepDot1"><span>1</span><label>Personal</label></div>
+      <div class="step active" id="sd1"><span>1</span><label>Personal</label></div>
       <div class="step-line"></div>
-      <div class="step" id="stepDot2"><span>2</span><label>Academic</label></div>
+      <div class="step" id="sd2"><span>2</span><label>Academic</label></div>
       <div class="step-line"></div>
-      <div class="step" id="stepDot3"><span>3</span><label>Bank</label></div>
+      <div class="step" id="sd3"><span>3</span><label>Bank</label></div>
       <div class="step-line"></div>
-      <div class="step" id="stepDot4"><span>4</span><label>Review</label></div>
+      <div class="step" id="sd4"><span>4</span><label>Review</label></div>
     </div>
 
-    <!-- Step 1 -->
-    <div class="card step-card" id="step1">
+    <!-- STEP 1: Personal -->
+    <div class="card step-card" id="s1">
       <h2 class="card-title">Personal Information</h2>
       <div class="form-grid">
-        <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" placeholder="As per Aadhaar"/></div>
-        <div class="form-group"><label>Date of Birth *</label><input type="date" id="dob"/></div>
-        <div class="form-group"><label>Mobile Number *</label><input type="tel" id="mobile" placeholder="10-digit mobile"/></div>
-        <div class="form-group"><label>Email Address *</label><input type="email" id="email" placeholder="your@email.com"/></div>
-        <div class="form-group"><label>PAN Number</label><input type="text" id="pan" placeholder="ABCDE1234F" maxlength="10"/></div>
-        <div class="form-group"><label>Aadhaar Number</label><input type="text" id="aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14"/></div>
-        <div class="form-group full-width"><label>Permanent Address *</label><textarea id="address" rows="2" placeholder="Full address with PIN code"></textarea></div>
+        <div class="form-group"><label>Full Name *</label><input type="text" id="f_name" placeholder="As per Aadhaar"/></div>
+        <div class="form-group"><label>Date of Birth</label><input type="date" id="f_dob"/></div>
+        <div class="form-group"><label>Mobile Number *</label><input type="tel" id="f_mobile" placeholder="10-digit mobile"/></div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="f_email" placeholder="your@email.com"/></div>
+        <div class="form-group"><label>PAN Number</label><input type="text" id="f_pan" placeholder="ABCDE1234F" maxlength="10"/></div>
+        <div class="form-group"><label>Aadhaar Number</label><input type="text" id="f_aadhaar" placeholder="XXXX XXXX XXXX" maxlength="14"/></div>
+        <div class="form-group full-width"><label>Permanent Address</label><textarea id="f_address" rows="2" placeholder="Full address with PIN code"></textarea></div>
       </div>
-      <div style="text-align:right;margin-top:1rem">
-        <button class="btn btn-primary" onclick="goNext(1)">Next: Academic Details →</button>
+      <div style="text-align:right;margin-top:1.5rem">
+        <button class="btn btn-primary" onclick="step1Next()">Next: Academic Details →</button>
       </div>
     </div>
 
-    <!-- Step 2 -->
-    <div class="card step-card" id="step2" style="display:none">
+    <!-- STEP 2: Academic -->
+    <div class="card step-card" id="s2" style="display:none">
       <h2 class="card-title">Academic Information</h2>
       <div class="form-grid">
-        <div class="form-group"><label>Course Name *</label><input type="text" id="course" placeholder="e.g. B.Tech Computer Science"/></div>
-        <div class="form-group"><label>College / University *</label><input type="text" id="college" placeholder="Full institution name"/></div>
+        <div class="form-group"><label>Course Name *</label><input type="text" id="f_course" placeholder="e.g. B.Tech Computer Science"/></div>
+        <div class="form-group"><label>College / University *</label><input type="text" id="f_college" placeholder="Full institution name"/></div>
         <div class="form-group"><label>Course Duration</label>
-          <select id="duration"><option value="1">1 Year</option><option value="2">2 Years</option><option value="3">3 Years</option><option value="4" selected>4 Years</option><option value="5">5 Years</option></select>
+          <select id="f_duration"><option value="1">1 Year</option><option value="2">2 Years</option><option value="3">3 Years</option><option value="4" selected>4 Years</option><option value="5">5 Years</option></select>
         </div>
         <div class="form-group"><label>Admission Year</label>
-          <select id="admYear"><option>2023</option><option>2024</option><option selected>2025</option><option>2026</option></select>
+          <select id="f_year"><option>2023</option><option>2024</option><option selected>2025</option><option>2026</option></select>
         </div>
-        <div class="form-group"><label>Loan Amount Required (₹) *</label><input type="number" id="loanAmt" placeholder="e.g. 500000" min="50000" max="5000000"/></div>
-        <div class="form-group"><label>12th % / CGPA</label><input type="text" id="marks" placeholder="e.g. 85% or 8.5 CGPA"/></div>
-        <div class="form-group"><label>Co-applicant Name</label><input type="text" id="coApp" placeholder="Parent / Guardian name"/></div>
-        <div class="form-group"><label>Co-applicant Annual Income (₹)</label><input type="number" id="coIncome" placeholder="e.g. 600000"/></div>
+        <div class="form-group"><label>Loan Amount (₹) *</label><input type="number" id="f_amt" placeholder="e.g. 500000" min="10000"/></div>
+        <div class="form-group"><label>12th % / CGPA</label><input type="text" id="f_marks" placeholder="e.g. 85% or 8.5 CGPA"/></div>
+        <div class="form-group"><label>Co-applicant Name</label><input type="text" id="f_coapplicant" placeholder="Parent / Guardian name"/></div>
+        <div class="form-group"><label>Co-applicant Income (₹/year)</label><input type="number" id="f_coincome" placeholder="e.g. 600000"/></div>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-top:1rem">
-        <button class="btn btn-outline" onclick="goPrev(2)">← Back</button>
-        <button class="btn btn-primary" onclick="goNext(2)">Next: Choose Bank →</button>
-      </div>
-    </div>
-
-    <!-- Step 3 -->
-    <div class="card step-card" id="step3" style="display:none">
-      <h2 class="card-title">Choose Your Bank</h2>
-      <p style="color:var(--text-muted);margin-bottom:1.5rem">Click on a bank card to select it.</p>
-      <div id="bankCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem"></div>
-      <div id="selectedBankMsg" style="display:none;margin-top:1rem;padding:1rem;background:rgba(16,185,129,0.1);border:1px solid #10b981;border-radius:12px;color:#065f46;font-weight:600"></div>
       <div style="display:flex;justify-content:space-between;margin-top:1.5rem">
-        <button class="btn btn-outline" onclick="goPrev(3)">← Back</button>
-        <button class="btn btn-primary" onclick="goNext(3)">Next: Review →</button>
+        <button class="btn btn-outline" onclick="showStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="step2Next()">Next: Choose Bank →</button>
       </div>
     </div>
 
-    <!-- Step 4 -->
-    <div class="card step-card" id="step4" style="display:none">
-      <h2 class="card-title">Review & Submit</h2>
-      <div id="reviewContent"></div>
-      <div id="submitMsg" style="display:none;text-align:center;padding:2rem">
-        <div style="font-size:3rem">✅</div>
-        <h3 style="color:#10b981;margin:.5rem 0">Application Submitted!</h3>
-        <p style="color:var(--text-muted)">Your application has been saved. Track it on your Dashboard.</p>
-        <a href="dashboard.html" class="btn btn-primary" style="margin-top:1rem;display:inline-block">Go to Dashboard</a>
-      </div>
-      <div id="submitActions" style="display:flex;justify-content:space-between;margin-top:1.5rem">
-        <button class="btn btn-outline" onclick="goPrev(4)">← Back</button>
-        <button class="btn btn-primary" onclick="submitApp()">Submit Application 🚀</button>
+    <!-- STEP 3: Bank -->
+    <div class="card step-card" id="s3" style="display:none">
+      <h2 class="card-title">Choose Your Bank</h2>
+      <p style="color:#64748b;margin-bottom:1.5rem;font-size:.9rem">Click on a bank card to select it</p>
+      <div id="bankGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem"></div>
+      <div id="bankSelectedMsg" style="display:none;padding:1rem;background:rgba(16,185,129,0.1);border:1.5px solid #10b981;border-radius:12px;color:#065f46;font-weight:600;margin-bottom:1.5rem"></div>
+      <div style="display:flex;justify-content:space-between">
+        <button class="btn btn-outline" onclick="showStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="step3Next()">Next: Review →</button>
       </div>
     </div>
+
+    <!-- STEP 4: Review -->
+    <div class="card step-card" id="s4" style="display:none">
+      <h2 class="card-title">Review & Submit</h2>
+      <div id="reviewBox"></div>
+      <div id="successBox" style="display:none;text-align:center;padding:2.5rem 1rem">
+        <div style="font-size:4rem;margin-bottom:1rem">✅</div>
+        <h3 style="color:#10b981;font-size:1.5rem;margin-bottom:.5rem">Application Submitted!</h3>
+        <p style="color:#64748b;margin-bottom:1.5rem">Your application has been saved successfully. Track it on your Dashboard.</p>
+        <a href="dashboard.html" class="btn btn-primary">Go to Dashboard →</a>
+      </div>
+      <div id="reviewActions" style="display:flex;justify-content:space-between;margin-top:1.5rem">
+        <button class="btn btn-outline" onclick="showStep(3)">← Back</button>
+        <button class="btn btn-primary" onclick="submitNow()">Submit Application 🚀</button>
+      </div>
+    </div>
+
   </main>
 </div>
 
 <script>
-var currentUser = JSON.parse(localStorage.getItem('loanit_user') || 'null');
-if (!currentUser) window.location.href = 'login.html';
+var cu = JSON.parse(localStorage.getItem('loanit_user') || 'null');
+if (!cu) { window.location.href = 'login.html'; }
 
-function doLogout() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; }
+function doLogout() {
+  localStorage.removeItem('loanit_user');
+  localStorage.removeItem('loanit_role');
+  window.location.href = 'login.html';
+}
+
+var selBank = null;
 
 var BANKS = [
-  { id:'sbi',   name:'State Bank of India',    rate:'8.15%', max:'₹15L', icon:'🏦', color:'#1a56db', processing:'0.5%', tenure:'15 yrs' },
-  { id:'union', name:'Union Bank',              rate:'8.05%', max:'₹20L', icon:'🤝', color:'#8b5cf6', processing:'0.5%', tenure:'15 yrs' },
-  { id:'bob',   name:'Bank of Baroda',          rate:'8.35%', max:'₹15L', icon:'🏛️', color:'#f59e0b', processing:'1%',   tenure:'15 yrs' },
-  { id:'pnb',   name:'Punjab National Bank',    rate:'8.45%', max:'₹10L', icon:'🌟', color:'#10b981', processing:'Nil',  tenure:'10 yrs' },
-  { id:'hdfc',  name:'HDFC Bank',               rate:'9.50%', max:'₹20L', icon:'💎', color:'#ef4444', processing:'1%',   tenure:'15 yrs' },
-  { id:'axis',  name:'Axis Bank',               rate:'13.70%',max:'₹40L', icon:'⚡', color:'#6366f1', processing:'2%',   tenure:'20 yrs' },
+  {id:'union', name:'Union Bank of India',    rate:'8.05', max:'20L', icon:'🤝', col:'#8b5cf6'},
+  {id:'sbi',   name:'State Bank of India',    rate:'8.15', max:'15L', icon:'🏦', col:'#1a56db'},
+  {id:'bob',   name:'Bank of Baroda',          rate:'8.35', max:'15L', icon:'🏛️', col:'#f59e0b'},
+  {id:'pnb',   name:'Punjab National Bank',   rate:'8.45', max:'10L', icon:'🌟', col:'#10b981'},
+  {id:'hdfc',  name:'HDFC Bank',               rate:'9.50', max:'20L', icon:'💎', col:'#ef4444'},
+  {id:'axis',  name:'Axis Bank',               rate:'13.70',max:'40L', icon:'⚡', col:'#6366f1'},
 ];
 
-var selectedBank = null;
-
 function renderBanks() {
-  var html = '';
-  for (var i = 0; i < BANKS.length; i++) {
+  var h = '';
+  for (var i=0; i<BANKS.length; i++) {
     var b = BANKS[i];
-    html += '<div id="bc_' + b.id + '" onclick="pickBank(\'' + b.id + '\')" style="cursor:pointer;border:2px solid #e2e8f0;border-radius:14px;padding:1.25rem;transition:all .2s;background:white">' +
-      '<div style="font-size:2rem;margin-bottom:.5rem">' + b.icon + '</div>' +
-      '<div style="font-weight:700;font-size:.95rem">' + b.name + '</div>' +
-      '<div style="color:#64748b;font-size:.8rem;margin:.35rem 0">Rate: <strong style="color:' + b.color + '">' + b.rate + '</strong></div>' +
-      '<div style="color:#64748b;font-size:.78rem">Max: ' + b.max + ' | Tenure: ' + b.tenure + '</div>' +
-      '<div style="color:#64748b;font-size:.78rem">Processing: ' + b.processing + '</div>' +
-      '</div>';
+    h += '<div id="bcard_'+b.id+'" onclick="pickBank(\''+b.id+'\')" style="cursor:pointer;border:2px solid #e2e8f0;border-radius:14px;padding:1.25rem;background:white;transition:all .2s">';
+    h += '<div style="font-size:2rem;margin-bottom:.6rem">'+b.icon+'</div>';
+    h += '<div style="font-weight:700;font-size:.92rem;margin-bottom:.4rem">'+b.name+'</div>';
+    h += '<div style="font-size:.8rem;color:#64748b">Rate: <strong style="color:'+b.col+'">'+b.rate+'% p.a.</strong></div>';
+    h += '<div style="font-size:.78rem;color:#94a3b8;margin-top:.25rem">Max ₹'+b.max+'</div>';
+    h += '</div>';
   }
-  document.getElementById('bankCards').innerHTML = html;
+  document.getElementById('bankGrid').innerHTML = h;
 }
 
 function pickBank(id) {
-  selectedBank = null;
-  for (var i = 0; i < BANKS.length; i++) { if (BANKS[i].id === id) { selectedBank = BANKS[i]; break; } }
-  var cards = document.getElementById('bankCards').children;
-  for (var j = 0; j < cards.length; j++) { cards[j].style.borderColor = '#e2e8f0'; cards[j].style.background = 'white'; }
-  var el = document.getElementById('bc_' + id);
-  el.style.borderColor = '#1a56db';
-  el.style.background = 'rgba(26,86,219,0.07)';
-  var msg = document.getElementById('selectedBankMsg');
+  selBank = null;
+  for (var i=0; i<BANKS.length; i++) { if (BANKS[i].id===id) { selBank=BANKS[i]; break; } }
+  var cards = document.querySelectorAll('[id^="bcard_"]');
+  for (var j=0; j<cards.length; j++) { cards[j].style.borderColor='#e2e8f0'; cards[j].style.background='white'; }
+  var c = document.getElementById('bcard_'+id);
+  if (c) { c.style.borderColor='#1a56db'; c.style.background='rgba(26,86,219,0.07)'; }
+  var msg = document.getElementById('bankSelectedMsg');
   msg.style.display = 'block';
-  msg.innerHTML = '✅ Selected: <strong>' + selectedBank.name + '</strong> — ' + selectedBank.rate + ' | Max ' + selectedBank.max + ' | Processing: ' + selectedBank.processing;
+  msg.innerHTML = '✅ Selected: <strong>'+selBank.name+'</strong> at '+selBank.rate+'% p.a. | Max ₹'+selBank.max;
 }
 
-function goNext(step) {
-  if (step === 1) {
-    var name = document.getElementById('fullName').value.trim();
-    var mob = document.getElementById('mobile').value.trim();
-    var addr = document.getElementById('address').value.trim();
-    if (!name || !mob || !addr) { alert('Please fill Full Name, Mobile Number, and Address.'); return; }
+function showStep(n) {
+  for (var i=1; i<=4; i++) {
+    var s = document.getElementById('s'+i);
+    if (s) s.style.display = (i===n) ? 'block' : 'none';
+    var d = document.getElementById('sd'+i);
+    if (d) d.classList.toggle('active', i<=n);
   }
-  if (step === 2) {
-    var course = document.getElementById('course').value.trim();
-    var college = document.getElementById('college').value.trim();
-    var amt = document.getElementById('loanAmt').value;
-    if (!course || !college || !amt) { alert('Please fill Course, College, and Loan Amount.'); return; }
-  }
-  if (step === 3) {
-    if (!selectedBank) { alert('Please select a bank first.'); return; }
-    buildReview();
-  }
-  document.getElementById('step' + step).style.display = 'none';
-  document.getElementById('step' + (step + 1)).style.display = 'block';
-  updateDots(step + 1);
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 
-function goPrev(step) {
-  document.getElementById('step' + step).style.display = 'none';
-  document.getElementById('step' + (step - 1)).style.display = 'block';
-  updateDots(step - 1);
-  window.scrollTo(0, 0);
+function step1Next() {
+  var name = document.getElementById('f_name').value.trim();
+  var mob = document.getElementById('f_mobile').value.trim();
+  if (!name) { alert('Please enter your Full Name.'); return; }
+  if (!mob) { alert('Please enter your Mobile Number.'); return; }
+  showStep(2);
 }
 
-function updateDots(active) {
-  for (var i = 1; i <= 4; i++) {
-    var dot = document.getElementById('stepDot' + i);
-    if (dot) dot.classList.toggle('active', i <= active);
-  }
+function step2Next() {
+  var course = document.getElementById('f_course').value.trim();
+  var college = document.getElementById('f_college').value.trim();
+  var amt = document.getElementById('f_amt').value.trim();
+  if (!course) { alert('Please enter your Course Name.'); return; }
+  if (!college) { alert('Please enter your College / University name.'); return; }
+  if (!amt) { alert('Please enter the Loan Amount required.'); return; }
+  showStep(3);
+}
+
+function step3Next() {
+  if (!selBank) { alert('Please select a bank to continue.'); return; }
+  buildReview();
+  showStep(4);
 }
 
 function buildReview() {
-  var amt = Number(document.getElementById('loanAmt').value).toLocaleString('en-IN');
-  document.getElementById('reviewContent').innerHTML =
+  var amt = parseInt(document.getElementById('f_amt').value)||0;
+  document.getElementById('reviewBox').innerHTML =
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">' +
-    '<div class="card" style="padding:1rem"><h4 style="color:#1a56db;margin-bottom:.75rem">Personal Details</h4>' +
-    '<p><strong>Name:</strong> ' + document.getElementById('fullName').value + '</p>' +
-    '<p><strong>Mobile:</strong> ' + document.getElementById('mobile').value + '</p>' +
-    '<p><strong>Email:</strong> ' + document.getElementById('email').value + '</p>' +
-    '<p><strong>PAN:</strong> ' + (document.getElementById('pan').value || 'N/A') + '</p></div>' +
-    '<div class="card" style="padding:1rem"><h4 style="color:#1a56db;margin-bottom:.75rem">Academic Details</h4>' +
-    '<p><strong>Course:</strong> ' + document.getElementById('course').value + '</p>' +
-    '<p><strong>College:</strong> ' + document.getElementById('college').value + '</p>' +
-    '<p><strong>Loan Amount:</strong> ₹' + amt + '</p>' +
-    '<p><strong>Duration:</strong> ' + document.getElementById('duration').value + ' years</p></div>' +
-    '<div class="card" style="padding:1rem;grid-column:span 2"><h4 style="color:#1a56db;margin-bottom:.75rem">Selected Bank</h4>' +
-    '<p><strong>' + selectedBank.name + '</strong> &nbsp;|&nbsp; Rate: ' + selectedBank.rate + ' &nbsp;|&nbsp; Max Loan: ' + selectedBank.max + ' &nbsp;|&nbsp; Processing: ' + selectedBank.processing + '</p></div>' +
+    '<div class="card" style="padding:1.25rem"><h4 style="color:#1a56db;margin-bottom:.75rem;font-size:.95rem">👤 Personal Details</h4>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>Name:</strong> '+document.getElementById('f_name').value+'</p>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>Mobile:</strong> '+document.getElementById('f_mobile').value+'</p>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>Email:</strong> '+document.getElementById('f_email').value+'</p>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>PAN:</strong> '+(document.getElementById('f_pan').value||'N/A')+'</p></div>' +
+    '<div class="card" style="padding:1.25rem"><h4 style="color:#1a56db;margin-bottom:.75rem;font-size:.95rem">🎓 Academic Details</h4>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>Course:</strong> '+document.getElementById('f_course').value+'</p>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>College:</strong> '+document.getElementById('f_college').value+'</p>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>Loan Amount:</strong> ₹'+amt.toLocaleString('en-IN')+'</p>' +
+    '<p style="margin:.35rem 0;font-size:.88rem"><strong>Duration:</strong> '+document.getElementById('f_duration').value+' years</p></div>' +
+    '<div class="card" style="padding:1.25rem;grid-column:span 2"><h4 style="color:#1a56db;margin-bottom:.75rem;font-size:.95rem">🏦 Selected Bank</h4>' +
+    '<p style="font-size:.92rem"><strong>'+selBank.name+'</strong> &nbsp;|&nbsp; '+selBank.rate+'% p.a. &nbsp;|&nbsp; Max ₹'+selBank.max+'</p></div>' +
     '</div>';
 }
 
-function submitApp() {
+function submitNow() {
   var app = {
-    id: 'APP' + Date.now(),
-    fullName: document.getElementById('fullName').value,
-    mobile: document.getElementById('mobile').value,
-    email: document.getElementById('email').value,
-    pan: document.getElementById('pan').value,
-    aadhaar: document.getElementById('aadhaar').value,
-    course: document.getElementById('course').value,
-    college: document.getElementById('college').value,
-    duration: document.getElementById('duration').value,
-    loanAmount: document.getElementById('loanAmt').value,
-    marks: document.getElementById('marks').value,
-    coApplicant: document.getElementById('coApp').value,
-    coIncome: document.getElementById('coIncome').value,
-    bank: selectedBank.name,
-    bankId: selectedBank.id,
-    interestRate: selectedBank.rate,
+    id: 'APP'+Date.now(),
+    fullName: document.getElementById('f_name').value,
+    mobile: document.getElementById('f_mobile').value,
+    email: document.getElementById('f_email').value,
+    pan: document.getElementById('f_pan').value,
+    aadhaar: document.getElementById('f_aadhaar').value,
+    address: document.getElementById('f_address').value,
+    course: document.getElementById('f_course').value,
+    college: document.getElementById('f_college').value,
+    duration: document.getElementById('f_duration').value,
+    loanAmount: document.getElementById('f_amt').value,
+    marks: document.getElementById('f_marks').value,
+    coApplicant: document.getElementById('f_coapplicant').value,
+    coIncome: document.getElementById('f_coincome').value,
+    bank: selBank.name,
+    bankId: selBank.id,
+    interestRate: selBank.rate+'%',
     status: 'Submitted',
-    userId: currentUser.uid || currentUser.email,
+    userId: cu.uid || cu.email,
     submittedAt: new Date().toISOString()
   };
-  var apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  var apps = JSON.parse(localStorage.getItem('loanit_applications')||'[]');
   apps.unshift(app);
   localStorage.setItem('loanit_applications', JSON.stringify(apps));
-  document.getElementById('submitActions').style.display = 'none';
-  document.getElementById('reviewContent').style.display = 'none';
-  document.getElementById('submitMsg').style.display = 'block';
+  document.getElementById('reviewBox').style.display = 'none';
+  document.getElementById('reviewActions').style.display = 'none';
+  document.getElementById('successBox').style.display = 'block';
 }
 
 renderBanks();
