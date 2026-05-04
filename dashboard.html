@@ -83,73 +83,37 @@
   </main>
 </div>
 
-<script type="module">
-import { auth, db, onAuthStateChanged, collection, query, where, getDocs } from './firebase.js';
+<script>
+const user = JSON.parse(localStorage.getItem('loanit_user') || 'null');
+if (!user) window.location.href = 'login.html';
+else document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + user.name + '!';
 
-onAuthStateChanged(auth, async user => {
-  const stored = localStorage.getItem('loanit_user');
-  if (!user && !stored) { window.location.href = 'login.html'; return; }
-  const userData = stored ? JSON.parse(stored) : {};
-  document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + (userData.name || 'Student') + '!';
-  await loadApplications(user?.uid || userData.uid);
-});
+window.doLogout = function() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; };
 
-window.doLogout = function() {
-  auth.signOut?.(); localStorage.clear(); window.location.href = 'login.html';
-};
-
-async function loadApplications(uid) {
-  if (!uid) { renderEmpty(); return; }
-  try {
-    const q = query(collection(db, 'applications'), where('userId', '==', uid));
-    const snap = await getDocs(q);
-    const apps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderStats(apps);
-    renderApps(apps);
-  } catch(e) {
-    document.getElementById('appsList').innerHTML = `<p style="color:#ef4444;padding:1rem">Error loading: ${e.message}</p>`;
-  }
+function loadApplications() {
+  const apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  const myApps = apps.filter(a => a.userId === (user?.uid || user?.email));
+  renderStats(myApps);
+  renderApps(myApps);
 }
 
 function renderStats(apps) {
   document.getElementById('totalApps').textContent = apps.length;
-  document.getElementById('pendingApps').textContent = apps.filter(a => a.status === 'Under Review' || a.status === 'Submitted').length;
+  document.getElementById('pendingApps').textContent = apps.filter(a => ['Submitted','Under Review'].includes(a.status)).length;
   document.getElementById('approvedApps').textContent = apps.filter(a => a.status === 'Approved').length;
   const total = apps.reduce((s,a) => s + parseFloat(a.loanAmount||0), 0);
   document.getElementById('totalAmount').textContent = '₹' + (total/100000).toFixed(1) + 'L';
 }
 
 function renderApps(apps) {
-  if (!apps.length) { renderEmpty(); return; }
-  const statusColor = { 'Submitted':'#f59e0b', 'Under Review':'#3b82f6', 'Approved':'#10b981', 'Rejected':'#ef4444', 'Disbursed':'#8b5cf6' };
-  document.getElementById('appsList').innerHTML = `
-    <table style="width:100%;border-collapse:collapse">
-      <thead><tr style="border-bottom:1px solid var(--border)">
-        <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Applicant</th>
-        <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Course</th>
-        <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Bank</th>
-        <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Amount</th>
-        <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Status</th>
-      </tr></thead>
-      <tbody>${apps.map(a => `
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.75rem">${a.fullName}</td>
-          <td style="padding:.75rem;color:var(--text-muted);font-size:.9rem">${a.course}</td>
-          <td style="padding:.75rem;font-size:.9rem">${a.bank}</td>
-          <td style="padding:.75rem;font-weight:700">₹${Number(a.loanAmount).toLocaleString('en-IN')}</td>
-          <td style="padding:.75rem"><span style="background:${statusColor[a.status]||'#6b7280'}22;color:${statusColor[a.status]||'#6b7280'};padding:.25rem .75rem;border-radius:99px;font-size:.8rem;font-weight:700">${a.status}</span></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-}
-
-function renderEmpty() {
-  document.getElementById('appsList').innerHTML = `
-    <div style="text-align:center;padding:3rem;color:var(--text-muted)">
-      <div style="font-size:3rem;margin-bottom:1rem">📋</div>
-      <p>No applications yet.</p>
-      <a href="register.html" class="btn btn-primary" style="margin-top:1rem;display:inline-block">Apply Now</a>
-    </div>`;
+  if (!apps.length) {
+    document.getElementById('appsList').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem;margin-bottom:1rem">📋</div><p>No applications yet.</p><a href="register.html" class="btn btn-primary" style="margin-top:1rem;display:inline-block">Apply Now</a></div>';
+    return;
+  }
+  const statusColor = { 'Submitted':'#f59e0b','Under Review':'#3b82f6','Approved':'#10b981','Rejected':'#ef4444','Disbursed':'#8b5cf6' };
+  document.getElementById('appsList').innerHTML = '<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Applicant</th><th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Course</th><th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Bank</th><th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Amount</th><th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Status</th></tr></thead><tbody>' +
+    apps.map(a => '<tr style="border-bottom:1px solid var(--border)"><td style="padding:.75rem">' + a.fullName + '</td><td style="padding:.75rem;color:var(--text-muted);font-size:.9rem">' + a.course + '</td><td style="padding:.75rem;font-size:.9rem">' + a.bank + '</td><td style="padding:.75rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString("en-IN") + '</td><td style="padding:.75rem"><span style="background:' + (statusColor[a.status]||"#6b7280") + '22;color:' + (statusColor[a.status]||"#6b7280") + ';padding:.25rem .75rem;border-radius:99px;font-size:.8rem;font-weight:700">' + a.status + '</span></td></tr>').join('') +
+    '</tbody></table>';
 }
 
 window.calcEMI = function() {
@@ -158,12 +122,13 @@ window.calcEMI = function() {
   const n = (parseFloat(document.getElementById('emiYears').value)||0)*12;
   const emi = r ? P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1) : P/n;
   const total = emi*n;
-  document.getElementById('emiResult').innerHTML = `
-    <div class="stat-card blue" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹${Math.round(emi).toLocaleString('en-IN')}</div><div class="stat-label">Monthly EMI</div></div></div>
-    <div class="stat-card green" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹${Math.round(total).toLocaleString('en-IN')}</div><div class="stat-label">Total Payable</div></div></div>
-    <div class="stat-card yellow" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹${Math.round(total-P).toLocaleString('en-IN')}</div><div class="stat-label">Total Interest</div></div></div>`;
+  document.getElementById('emiResult').innerHTML =
+    '<div class="stat-card blue" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹' + Math.round(emi).toLocaleString('en-IN') + '</div><div class="stat-label">Monthly EMI</div></div></div>' +
+    '<div class="stat-card green" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹' + Math.round(total).toLocaleString('en-IN') + '</div><div class="stat-label">Total Payable</div></div></div>' +
+    '<div class="stat-card yellow" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹' + Math.round(total-P).toLocaleString('en-IN') + '</div><div class="stat-label">Total Interest</div></div></div>';
 };
 
+loadApplications();
 calcEMI();
 </script>
 </body>

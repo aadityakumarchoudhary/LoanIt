@@ -105,27 +105,19 @@
   </div>
 </div>
 
-<script type="module">
-import { auth, db, onAuthStateChanged, collection, getDocs, doc, updateDoc, query, orderBy } from './firebase.js';
-
-// Admin guard
+<script>
 const role = localStorage.getItem('loanit_role');
 if (role !== 'admin') window.location.href = 'login.html';
 
-window.doLogout = function() { localStorage.clear(); window.location.href = 'login.html'; };
+window.doLogout = function() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; };
 
 let allApps = [];
 let editId = null;
 
-window.loadApplications = async function() {
-  try {
-    const snap = await getDocs(collection(db, 'applications'));
-    allApps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderStats(allApps);
-    renderTable(allApps);
-  } catch(e) {
-    document.getElementById('adminAppsList').innerHTML = `<p style="color:#ef4444;padding:1rem">Firebase error: ${e.message}</p>`;
-  }
+window.loadApplications = function() {
+  allApps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  renderStats(allApps);
+  renderTable(allApps);
 };
 
 function renderStats(apps) {
@@ -138,42 +130,13 @@ function renderStats(apps) {
 
 function renderTable(apps) {
   if (!apps.length) {
-    document.getElementById('adminAppsList').innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>No applications found.</p></div>`;
+    document.getElementById('adminAppsList').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>No applications found.</p></div>';
     return;
   }
   const statusColor = { 'Submitted':'#f59e0b','Under Review':'#3b82f6','Approved':'#10b981','Rejected':'#ef4444','Disbursed':'#8b5cf6' };
-  document.getElementById('adminAppsList').innerHTML = `
-    <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;min-width:700px">
-      <thead><tr style="border-bottom:1px solid var(--border)">
-        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Applicant</th>
-        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Course / College</th>
-        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Bank</th>
-        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Amount</th>
-        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Status</th>
-        <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Action</th>
-      </tr></thead>
-      <tbody>${apps.map(a => `
-        <tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:.75rem .5rem">
-            <div style="font-weight:600">${a.fullName}</div>
-            <div style="font-size:.78rem;color:var(--text-muted)">${a.mobile || a.userEmail || ''}</div>
-          </td>
-          <td style="padding:.75rem .5rem">
-            <div style="font-size:.9rem">${a.course}</div>
-            <div style="font-size:.78rem;color:var(--text-muted)">${a.college}</div>
-          </td>
-          <td style="padding:.75rem .5rem;font-size:.9rem">${a.bank}</td>
-          <td style="padding:.75rem .5rem;font-weight:700">₹${Number(a.loanAmount).toLocaleString('en-IN')}</td>
-          <td style="padding:.75rem .5rem">
-            <span style="background:${statusColor[a.status]||'#6b7280'}22;color:${statusColor[a.status]||'#6b7280'};padding:.2rem .6rem;border-radius:99px;font-size:.78rem;font-weight:700">${a.status}</span>
-          </td>
-          <td style="padding:.75rem .5rem">
-            <button onclick="openModal('${a.id}','${a.fullName}','${a.status}')" style="padding:.35rem .8rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.82rem">Update</button>
-          </td>
-        </tr>`).join('')}
-      </tbody>
-    </table></div>`;
+  document.getElementById('adminAppsList').innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:700px"><thead><tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Applicant</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Course</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Bank</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Amount</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Status</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Action</th></tr></thead><tbody>' +
+    apps.map(a => '<tr style="border-bottom:1px solid var(--border)"><td style="padding:.75rem .5rem">' + a.fullName + '</td><td style="padding:.75rem .5rem;font-size:.85rem;color:var(--text-muted)">' + a.course + '</td><td style="padding:.75rem .5rem;font-size:.85rem">' + a.bank + '</td><td style="padding:.75rem .5rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString("en-IN") + '</td><td style="padding:.75rem .5rem"><span style="background:' + (statusColor[a.status]||"#6b7280") + '22;color:' + (statusColor[a.status]||"#6b7280") + ';padding:.2rem .6rem;border-radius:99px;font-size:.78rem;font-weight:700">' + a.status + '</span></td><td style="padding:.75rem .5rem"><button onclick="openModal('' + a.id + '','' + a.fullName + '')" class="btn btn-outline btn-sm">Update</button></td></tr>').join('') +
+    '</tbody></table></div>';
 }
 
 window.filterApps = function() {
@@ -188,51 +151,32 @@ window.filterApps = function() {
   renderTable(filtered);
 };
 
-window.openModal = function(id, name, status) {
+window.openModal = function(id, name) {
   editId = id;
   document.getElementById('modalName').textContent = 'Update: ' + name;
-  document.getElementById('newStatus').value = status;
-  const m = document.getElementById('statusModal');
-  m.style.display = 'flex';
+  document.getElementById('statusModal').style.display = 'flex';
 };
 
-window.closeModal = function() {
-  document.getElementById('statusModal').style.display = 'none';
-};
+window.closeModal = function() { document.getElementById('statusModal').style.display = 'none'; };
 
-window.saveStatus = async function() {
+window.saveStatus = function() {
   const newStatus = document.getElementById('newStatus').value;
-  try {
-    await updateDoc(doc(db, 'applications', editId), { status: newStatus });
-    closeModal();
-    await loadApplications();
-  } catch(e) {
-    alert('Error updating: ' + e.message);
-  }
+  const apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  const idx = apps.findIndex(a => a.id === editId);
+  if (idx >= 0) { apps[idx].status = newStatus; localStorage.setItem('loanit_applications', JSON.stringify(apps)); }
+  closeModal();
+  loadApplications();
 };
 
-window.loadUsers = async function() {
+window.loadUsers = function() {
+  const users = JSON.parse(localStorage.getItem('loanit_users') || '[]');
   document.getElementById('usersSection').style.display = 'block';
-  try {
-    const snap = await getDocs(collection(db, 'users'));
-    const users = snap.docs.map(d => d.data());
-    document.getElementById('usersList').innerHTML = users.length
-      ? `<table style="width:100%;border-collapse:collapse">
-          <thead><tr style="border-bottom:1px solid var(--border)">
-            <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Name</th>
-            <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Email</th>
-            <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Role</th>
-          </tr></thead>
-          <tbody>${users.map(u=>`<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:.75rem">${u.name}</td>
-            <td style="padding:.75rem;color:var(--text-muted)">${u.email}</td>
-            <td style="padding:.75rem"><span style="background:rgba(26,86,219,0.15);color:var(--primary);padding:.2rem .6rem;border-radius:99px;font-size:.8rem">${u.role}</span></td>
-          </tr>`).join('')}</tbody>
-        </table>`
-      : '<p style="color:var(--text-muted);padding:1rem">No registered users yet.</p>';
-  } catch(e) {
-    document.getElementById('usersList').innerHTML = `<p style="color:#ef4444">Error: ${e.message}</p>`;
-  }
+  document.getElementById('usersList').innerHTML = users.length ?
+    '<table style="width:100%;border-collapse:collapse">' +
+    '<thead><tr><th style="text-align:left;padding:.6rem;color:var(--text-muted);font-size:.8rem">Name</th><th style="text-align:left;padding:.6rem;color:var(--text-muted);font-size:.8rem">Email</th><th style="text-align:left;padding:.6rem;color:var(--text-muted);font-size:.8rem">Joined</th></tr></thead><tbody>' +
+    users.map(u => '<tr style="border-bottom:1px solid var(--border)"><td style="padding:.6rem">' + u.name + '</td><td style="padding:.6rem;color:var(--text-muted)">' + u.email + '</td><td style="padding:.6rem;color:var(--text-muted);font-size:.82rem">' + new Date(u.createdAt).toLocaleDateString('en-IN') + '</td></tr>').join('') +
+    '</tbody></table>' :
+    '<p style="color:var(--text-muted);padding:1rem">No registered users yet.</p>';
 };
 
 loadApplications();

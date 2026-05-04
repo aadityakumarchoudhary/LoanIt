@@ -71,22 +71,19 @@
   </div>
 </div>
 
-<script type="module">
-import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, setDoc, getDoc, serverTimestamp } from './firebase.js';
-
+<script>
 window.switchTab = function(tab) {
   document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
   document.getElementById('loginForm').style.display = tab==='login' ? 'block' : 'none';
   document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
 };
 
-window.doLogin = async function() {
+window.doLogin = function() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass = document.getElementById('loginPassword').value;
   const errEl = document.getElementById('loginError');
   errEl.style.display = 'none';
 
-  // Admin hardcoded login
   if (email === 'admin@loanit.in' && pass === 'admin123') {
     localStorage.setItem('loanit_role', 'admin');
     localStorage.setItem('loanit_user', JSON.stringify({ name: 'Admin', email, role: 'admin' }));
@@ -94,20 +91,19 @@ window.doLogin = async function() {
     return;
   }
 
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const userDoc = await getDoc(doc(db, 'users', cred.user.uid));
-    const userData = userDoc.exists() ? userDoc.data() : { name: email, role: 'student' };
-    localStorage.setItem('loanit_role', userData.role || 'student');
-    localStorage.setItem('loanit_user', JSON.stringify({ ...userData, uid: cred.user.uid }));
-    window.location.href = 'dashboard.html';
-  } catch(e) {
-    errEl.textContent = e.code === 'auth/invalid-credential' ? 'Invalid email or password.' : e.message;
+  const users = JSON.parse(localStorage.getItem('loanit_users') || '[]');
+  const user = users.find(u => u.email === email && u.password === pass);
+  if (!user) {
+    errEl.textContent = 'Invalid email or password.';
     errEl.style.display = 'block';
+    return;
   }
+  localStorage.setItem('loanit_role', 'student');
+  localStorage.setItem('loanit_user', JSON.stringify(user));
+  window.location.href = 'dashboard.html';
 };
 
-window.doRegister = async function() {
+window.doRegister = function() {
   const name = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const pass = document.getElementById('regPassword').value;
@@ -118,18 +114,21 @@ window.doRegister = async function() {
   if (!name || !email || !pass) { errEl.textContent = 'Please fill all fields.'; errEl.style.display='block'; return; }
   if (pass.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display='block'; return; }
 
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await setDoc(doc(db, 'users', cred.user.uid), { name, email, role: 'student', createdAt: serverTimestamp() });
-    sucEl.textContent = '✅ Account created! Redirecting...';
-    sucEl.style.display = 'block';
-    localStorage.setItem('loanit_role', 'student');
-    localStorage.setItem('loanit_user', JSON.stringify({ name, email, role: 'student', uid: cred.user.uid }));
-    setTimeout(() => window.location.href = 'dashboard.html', 1500);
-  } catch(e) {
-    errEl.textContent = e.code === 'auth/email-already-in-use' ? 'Email already registered. Please login.' : e.message;
-    errEl.style.display = 'block';
+  const users = JSON.parse(localStorage.getItem('loanit_users') || '[]');
+  if (users.find(u => u.email === email)) {
+    errEl.textContent = 'Email already registered. Please login.'; errEl.style.display='block'; return;
   }
+
+  const uid = 'USR' + Date.now();
+  const user = { name, email, password: pass, role: 'student', uid, createdAt: new Date().toISOString() };
+  users.push(user);
+  localStorage.setItem('loanit_users', JSON.stringify(users));
+  localStorage.setItem('loanit_role', 'student');
+  localStorage.setItem('loanit_user', JSON.stringify(user));
+
+  sucEl.textContent = '✅ Account created! Redirecting...';
+  sucEl.style.display = 'block';
+  setTimeout(() => window.location.href = 'dashboard.html', 1500);
 };
 </script>
 </body>

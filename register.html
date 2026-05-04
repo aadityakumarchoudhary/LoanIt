@@ -118,17 +118,12 @@
   </main>
 </div>
 
-<script type="module">
-import { auth, db, onAuthStateChanged, addDoc, collection, serverTimestamp } from './firebase.js';
+<script src="app.js"></script>
+<script>
+const user = JSON.parse(localStorage.getItem('loanit_user') || 'null');
+if (!user) window.location.href = 'login.html';
 
-// Auth guard
-onAuthStateChanged(auth, user => {
-  if (!user && !localStorage.getItem('loanit_user')) window.location.href = 'login.html';
-});
-
-window.doLogout = function() {
-  auth.signOut?.(); localStorage.clear(); window.location.href = 'login.html';
-};
+window.doLogout = function() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; };
 
 const BANKS = [
   { id:'sbi', name:'State Bank of India', rate:'8.15%', max:'₹15L', icon:'🏦', color:'#1a56db', processing:'0.5%', tenure:'15 years' },
@@ -143,46 +138,23 @@ let selectedBank = null;
 
 function renderBankCards() {
   const container = document.getElementById('bankCards');
-  container.innerHTML = BANKS.map(b => `
-    <div class="bank-card" id="bc_${b.id}" onclick="selectBank('${b.id}')" style="cursor:pointer;border:2px solid var(--border);border-radius:14px;padding:1.25rem;transition:.2s">
-      <div style="font-size:2rem;margin-bottom:.5rem">${b.icon}</div>
-      <div style="font-weight:700;font-size:1rem">${b.name}</div>
-      <div style="color:var(--text-muted);font-size:.8rem;margin:.4rem 0">Interest: <strong style="color:${b.color}">${b.rate}</strong></div>
-      <div style="color:var(--text-muted);font-size:.8rem">Max: ${b.max} | Tenure: ${b.tenure}</div>
-      <div style="color:var(--text-muted);font-size:.8rem">Processing: ${b.processing}</div>
-    </div>
-  `).join('');
+  container.innerHTML = BANKS.map(b => '<div class="bank-card" id="bc_' + b.id + '" onclick="selectBank('' + b.id + '')" style="cursor:pointer;border:2px solid var(--border);border-radius:14px;padding:1.25rem;transition:.2s"><div style="font-size:2rem;margin-bottom:.5rem">' + b.icon + '</div><div style="font-weight:700;font-size:1rem">' + b.name + '</div><div style="color:var(--text-muted);font-size:.8rem;margin:.4rem 0">Interest: <strong style="color:' + b.color + '">' + b.rate + '</strong></div><div style="color:var(--text-muted);font-size:.8rem">Max: ' + b.max + ' | Tenure: ' + b.tenure + '</div><div style="color:var(--text-muted);font-size:.8rem">Processing: ' + b.processing + '</div></div>').join('');
 }
 
 window.selectBank = function(id) {
   selectedBank = BANKS.find(b => b.id === id);
-  document.querySelectorAll('.bank-card').forEach(c => c.style.borderColor = 'var(--border)');
+  document.querySelectorAll('.bank-card').forEach(c => { c.style.borderColor='var(--border)'; c.style.background=''; });
   document.getElementById('bc_'+id).style.borderColor = '#1a56db';
   document.getElementById('bc_'+id).style.background = 'rgba(26,86,219,0.08)';
-  const amt = parseFloat(document.getElementById('loanAmt')?.value || 0);
   const eligEl = document.getElementById('eligResult');
   eligEl.style.display = 'block';
-  eligEl.innerHTML = `<div class="card" style="background:rgba(16,185,129,0.1);border:1px solid #10b981;padding:1rem;border-radius:12px">
-    <strong style="color:#10b981">✅ You selected ${selectedBank.name}</strong>
-    <p style="margin:.5rem 0 0;color:var(--text-muted);font-size:.9rem">Rate: ${selectedBank.rate} | Max Loan: ${selectedBank.max} | Processing Fee: ${selectedBank.processing}</p>
-  </div>`;
+  eligEl.innerHTML = '<div class="card" style="background:rgba(16,185,129,0.1);border:1px solid #10b981;padding:1rem;border-radius:12px"><strong style="color:#10b981">✅ You selected ' + selectedBank.name + '</strong><p style="margin:.5rem 0 0;color:var(--text-muted);font-size:.9rem">Rate: ' + selectedBank.rate + ' | Max Loan: ' + selectedBank.max + ' | Processing Fee: ' + selectedBank.processing + '</p></div>';
 };
 
 window.nextStep = function(current) {
-  if (current === 1) {
-    if (!document.getElementById('fullName').value || !document.getElementById('mobile').value) {
-      alert('Please fill Name and Mobile number.'); return;
-    }
-  }
-  if (current === 2) {
-    if (!document.getElementById('course').value || !document.getElementById('loanAmt').value) {
-      alert('Please fill Course and Loan Amount.'); return;
-    }
-  }
-  if (current === 3) {
-    if (!selectedBank) { alert('Please select a bank.'); return; }
-    buildReview();
-  }
+  if (current === 1 && (!document.getElementById('fullName').value || !document.getElementById('mobile').value)) { alert('Please fill Name and Mobile number.'); return; }
+  if (current === 2 && (!document.getElementById('course').value || !document.getElementById('loanAmt').value)) { alert('Please fill Course and Loan Amount.'); return; }
+  if (current === 3) { if (!selectedBank) { alert('Please select a bank.'); return; } buildReview(); }
   document.getElementById('step'+current).style.display = 'none';
   document.getElementById('step'+(current+1)).style.display = 'block';
   document.querySelectorAll('.step').forEach((s,i) => s.classList.toggle('active', i <= current));
@@ -194,62 +166,31 @@ window.prevStep = function(current) {
 };
 
 function buildReview() {
-  document.getElementById('reviewContent').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <div class="card" style="padding:1rem">
-        <h4 style="color:var(--primary);margin-bottom:.75rem">Personal Details</h4>
-        <p><strong>Name:</strong> ${document.getElementById('fullName').value}</p>
-        <p><strong>Mobile:</strong> ${document.getElementById('mobile').value}</p>
-        <p><strong>Email:</strong> ${document.getElementById('email').value}</p>
-        <p><strong>PAN:</strong> ${document.getElementById('pan').value || 'Not provided'}</p>
-      </div>
-      <div class="card" style="padding:1rem">
-        <h4 style="color:var(--primary);margin-bottom:.75rem">Academic Details</h4>
-        <p><strong>Course:</strong> ${document.getElementById('course').value}</p>
-        <p><strong>College:</strong> ${document.getElementById('college').value}</p>
-        <p><strong>Loan Amount:</strong> ₹${Number(document.getElementById('loanAmt').value).toLocaleString('en-IN')}</p>
-      </div>
-      <div class="card" style="padding:1rem;grid-column:span 2">
-        <h4 style="color:var(--primary);margin-bottom:.75rem">Selected Bank</h4>
-        <p><strong>${selectedBank.name}</strong> — ${selectedBank.rate} interest | Max ${selectedBank.max} | Processing: ${selectedBank.processing}</p>
-      </div>
-    </div>`;
+  document.getElementById('reviewContent').innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem"><div class="card" style="padding:1rem"><h4 style="color:var(--primary);margin-bottom:.75rem">Personal Details</h4><p><strong>Name:</strong> ' + document.getElementById('fullName').value + '</p><p><strong>Mobile:</strong> ' + document.getElementById('mobile').value + '</p><p><strong>Email:</strong> ' + document.getElementById('email').value + '</p></div><div class="card" style="padding:1rem"><h4 style="color:var(--primary);margin-bottom:.75rem">Academic Details</h4><p><strong>Course:</strong> ' + document.getElementById('course').value + '</p><p><strong>College:</strong> ' + document.getElementById('college').value + '</p><p><strong>Loan Amount:</strong> ₹' + Number(document.getElementById('loanAmt').value).toLocaleString('en-IN') + '</p></div><div class="card" style="padding:1rem;grid-column:span 2"><h4 style="color:var(--primary);margin-bottom:.75rem">Selected Bank</h4><p><strong>' + selectedBank.name + '</strong> — ' + selectedBank.rate + ' interest | Max ' + selectedBank.max + ' | Processing: ' + selectedBank.processing + '</p></div></div>';
 }
 
-window.submitApplication = async function() {
-  const userStr = localStorage.getItem('loanit_user');
-  const user = userStr ? JSON.parse(userStr) : {};
+window.submitApplication = function() {
   const app = {
+    id: 'APP' + Date.now(),
     fullName: document.getElementById('fullName').value,
     mobile: document.getElementById('mobile').value,
     email: document.getElementById('email').value,
     pan: document.getElementById('pan').value,
-    aadhaar: document.getElementById('aadhaar').value,
-    address: document.getElementById('address').value,
     course: document.getElementById('course').value,
     college: document.getElementById('college').value,
-    duration: document.getElementById('duration').value,
-    admYear: document.getElementById('admYear').value,
     loanAmount: document.getElementById('loanAmt').value,
-    marks: document.getElementById('marks').value,
-    coApplicant: document.getElementById('coApp').value,
-    coIncome: document.getElementById('coIncome').value,
-    bank: selectedBank.name,
-    bankId: selectedBank.id,
+    bank: selectedBank.name, bankId: selectedBank.id,
     interestRate: selectedBank.rate,
     status: 'Submitted',
-    userId: user.uid || 'guest',
-    userEmail: user.email || '',
-    submittedAt: serverTimestamp(),
+    userId: user?.uid || user?.email,
+    submittedAt: new Date().toISOString(),
   };
-  try {
-    await addDoc(collection(db, 'applications'), app);
-    document.getElementById('submitActions').style.display = 'none';
-    document.getElementById('submitMsg').style.display = 'block';
-    document.getElementById('reviewContent').style.display = 'none';
-  } catch(e) {
-    alert('Error submitting: ' + e.message);
-  }
+  const apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  apps.unshift(app);
+  localStorage.setItem('loanit_applications', JSON.stringify(apps));
+  document.getElementById('submitActions').style.display = 'none';
+  document.getElementById('submitMsg').style.display = 'block';
+  document.getElementById('reviewContent').style.display = 'none';
 };
 
 renderBankCards();
