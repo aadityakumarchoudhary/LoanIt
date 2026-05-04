@@ -6,16 +6,27 @@
 <title>LoanIt – Admin Panel</title>
 <link rel="stylesheet" href="style.css"/>
 <link rel="icon" href="logo.jpg" type="image/jpeg"/>
+<style>
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:1000; align-items:center; justify-content:center; padding:1rem; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:var(--surface); border-radius:20px; padding:2rem; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 80px rgba(0,0,0,0.5); }
+  .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:1rem; }
+  .detail-item { padding:.6rem .8rem; background:var(--bg); border-radius:10px; }
+  .detail-item .label { font-size:.75rem; color:var(--text-muted); font-weight:600; margin-bottom:.2rem; }
+  .detail-item .value { font-size:.92rem; color:var(--text); font-weight:500; }
+  .section-title { font-size:.85rem; font-weight:700; color:var(--primary); margin:1rem 0 .5rem; text-transform:uppercase; letter-spacing:.05em; }
+</style>
 </head>
 <body>
 <div class="app-layout">
   <aside class="sidebar">
     <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem">
       <img src="logo.jpg" class="nav-logo-img" alt="LoanIt"/>
+      <span style="font-size:.75rem;background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:99px;color:rgba(255,255,255,0.85);font-weight:700">ADMIN</span>
     </a>
     <nav class="nav-links">
-      <a href="admin.html" class="nav-item active"><span class="nav-icon">🛡️</span><span>Admin Panel</span></a>
-      <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></a>
+      <a href="admin.html" class="nav-item active"><span class="nav-icon">🛡️</span><span>All Applications</span></a>
+      <a href="#" class="nav-item" onclick="toggleUsers()"><span class="nav-icon">👥</span><span>Users</span></a>
     </nav>
     <div class="nav-bottom">
       <button onclick="doLogout()" class="nav-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;">
@@ -27,213 +38,283 @@
   <main class="main-content">
     <div class="page-header">
       <div>
-        <h1 class="page-title">Admin Dashboard</h1>
+        <h1 class="page-title">Admin Panel</h1>
         <p class="page-subtitle">Manage all loan applications</p>
       </div>
+      <button class="btn btn-primary" onclick="loadApplications()">🔄 Refresh</button>
     </div>
 
-    <div class="stats-grid" style="margin-bottom:2rem">
-      <div class="stat-card blue"><div class="stat-info"><div class="stat-num" id="aTotal">0</div><div class="stat-label">Total Applications</div></div></div>
-      <div class="stat-card yellow"><div class="stat-info"><div class="stat-num" id="aPending">0</div><div class="stat-label">Pending</div></div></div>
-      <div class="stat-card green"><div class="stat-info"><div class="stat-num" id="aApproved">0</div><div class="stat-label">Approved</div></div></div>
-      <div class="stat-card purple"><div class="stat-info"><div class="stat-num" id="aAmount">₹0</div><div class="stat-label">Total Amount</div></div></div>
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-info"><div class="stat-value" id="aTotal">0</div><div class="stat-label">Total Applications</div></div></div>
+      <div class="stat-card yellow"><div class="stat-icon">⏳</div><div class="stat-info"><div class="stat-value" id="aPending">0</div><div class="stat-label">Pending Review</div></div></div>
+      <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-info"><div class="stat-value" id="aApproved">0</div><div class="stat-label">Approved</div></div></div>
+      <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-info"><div class="stat-value" id="aAmount">₹0</div><div class="stat-label">Total Loan Value</div></div></div>
     </div>
 
-    <!-- Filters -->
-    <div class="card" style="margin-bottom:1.5rem;padding:1rem">
-      <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
-        <input type="text" id="searchInput" placeholder="Search by name or college..." style="flex:1;min-width:200px;padding:.6rem .9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit" oninput="filterApps()"/>
-        <select id="statusFilter" onchange="filterApps()" style="padding:.6rem .9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit">
+    <!-- Filter Bar -->
+    <div class="card" style="padding:1rem 1.5rem">
+      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+        <input type="text" id="searchInput" placeholder="Search by name or college..." oninput="filterApps()"
+          style="flex:1;min-width:200px;padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)"/>
+        <select id="statusFilter" onchange="filterApps()"
+          style="padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
           <option value="">All Status</option>
-          <option>Submitted</option><option>Under Review</option><option>Approved</option><option>Rejected</option><option>Disbursed</option>
+          <option value="submitted">Submitted</option>
+          <option value="under_review">Under Review</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="disbursed">Disbursed</option>
         </select>
-        <select id="bankFilter" onchange="filterApps()" style="padding:.6rem .9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit">
+        <select id="bankFilter" onchange="filterApps()"
+          style="padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
           <option value="">All Banks</option>
-          <option>State Bank of India</option><option>Union Bank</option><option>Bank of Baroda</option><option>Punjab National Bank</option><option>HDFC Bank</option><option>Axis Bank</option>
+          <option>State Bank of India</option>
+          <option>HDFC Bank</option>
+          <option>Axis Bank</option>
+          <option>Bank of Baroda</option>
+          <option>Union Bank</option>
+          <option>Punjab National Bank</option>
         </select>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:1.5rem">
-      <div class="card-header"><h2 class="card-title">All Applications</h2></div>
+    <!-- Applications Table -->
+    <div class="card">
       <div id="adminAppsList"></div>
     </div>
 
-    <div class="card">
-      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
-        <h2 class="card-title">Registered Users</h2>
-        <button class="btn btn-outline btn-sm" onclick="loadUsers()">Refresh</button>
-      </div>
+    <!-- Users Section -->
+    <div class="card" id="usersSection" style="display:none">
+      <h2 class="card-title">Registered Users</h2>
       <div id="usersList"></div>
     </div>
   </main>
 </div>
 
-<!-- Status Modal -->
-<div id="statusModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:2rem;min-width:580px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <h3 id="modalName" style="margin-bottom:1.5rem;color:#0f172a"></h3>
-    <div class="form-group">
-      <label>New Status</label>
-      <select id="newStatus" style="width:100%;padding:.7rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:1rem">
-        <option>Submitted</option>
-        <option>Under Review</option>
-        <option>Approved</option>
-        <option>Rejected</option>
-        <option>Disbursed</option>
-      </select>
+<!-- View Details Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="margin:0;font-size:1.2rem">Application Details</h2>
+      <button onclick="closeDetailModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted)">✕</button>
     </div>
-    <div style="display:flex;gap:1rem;margin-top:1.5rem">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" style="flex:1" onclick="saveStatus()">Save</button>
+    <div id="detailContent"></div>
+    <div style="margin-top:1.5rem">
+      <p class="section-title">Update Status</p>
+      <div style="display:flex;gap:1rem;align-items:center">
+        <select id="newStatus" style="flex:1;padding:.75rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+          <option value="submitted">Submitted</option>
+          <option value="under_review">Under Review</option>
+          <option value="document_pending">Document Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="disbursed">Disbursed</option>
+        </select>
+        <button class="btn btn-primary" onclick="saveStatus()">Save Status</button>
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:1rem">
+      <button class="btn btn-outline" onclick="closeDetailModal()">Close</button>
     </div>
   </div>
 </div>
 
+<script src="app.js"></script>
 <script>
-if (localStorage.getItem('loanit_role') !== 'admin') window.location.href = 'login.html';
+  if (!isAdmin()) window.location.href = 'login.html';
+  function doLogout() { logout(); }
 
-function doLogout() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; }
+  let allApps = [];
+  let currentEditId = null;
 
-var allApps = [];
-var editId = null;
+  const statusColor = { submitted:'#f59e0b', under_review:'#3b82f6', document_pending:'#f59e0b', approved:'#10b981', rejected:'#ef4444', disbursed:'#8b5cf6' };
+  const statusLabel = { submitted:'Submitted', under_review:'Under Review', document_pending:'Docs Pending', approved:'Approved', rejected:'Rejected', disbursed:'Disbursed' };
 
-function loadApps() {
-  allApps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
-  var pending = 0, approved = 0, total = 0;
-  for (var i = 0; i < allApps.length; i++) {
-    if (allApps[i].status === 'Submitted' || allApps[i].status === 'Under Review') pending++;
-    if (allApps[i].status === 'Approved' || allApps[i].status === 'Disbursed') approved++;
-    total += parseFloat(allApps[i].loanAmount || 0);
+  function loadApplications() {
+    allApps = getApplications();
+    renderStats(allApps);
+    renderTable(allApps);
   }
-  document.getElementById('aTotal').textContent = allApps.length;
-  document.getElementById('aPending').textContent = pending;
-  document.getElementById('aApproved').textContent = approved;
-  document.getElementById('aAmount').textContent = '₹' + (total / 100000).toFixed(1) + 'L';
-  renderTable(allApps);
-  loadUsers();
-}
 
-function renderTable(apps) {
-  if (!apps.length) {
-    document.getElementById('adminAppsList').innerHTML = '<div style="text-align:center;padding:3rem;color:#94a3b8"><div style="font-size:3rem">📭</div><p>No applications found.</p></div>';
-    return;
+  function renderStats(apps) {
+    document.getElementById('aTotal').textContent = apps.length;
+    document.getElementById('aPending').textContent = apps.filter(a => ['submitted','under_review','document_pending'].includes(a.status)).length;
+    document.getElementById('aApproved').textContent = apps.filter(a => a.status === 'approved').length;
+    const total = apps.reduce((s, a) => s + parseFloat(a.loanAmount || 0), 0);
+    document.getElementById('aAmount').textContent = '₹' + (total / 100000).toFixed(1) + 'L';
   }
-  var colors = { 'Submitted':'#f59e0b','Under Review':'#3b82f6','Approved':'#10b981','Rejected':'#ef4444','Disbursed':'#8b5cf6' };
-  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:700px"><thead><tr style="border-bottom:1px solid #e2e8f0">' +
-    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Applicant</th>' +
-    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Course</th>' +
-    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Bank</th>' +
-    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Amount</th>' +
-    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Status</th>' +
-    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Action</th>' +
-    '</tr></thead><tbody>';
-  for (var i = 0; i < apps.length; i++) {
-    var a = apps[i];
-    var c = colors[a.status] || '#6b7280';
-    html += '<tr style="border-bottom:1px solid #f1f5f9">' +
-      '<td style="padding:.7rem;font-weight:600">' + a.fullName + '</td>' +
-      '<td style="padding:.7rem;color:#64748b;font-size:.85rem">' + a.course + '</td>' +
-      '<td style="padding:.7rem;font-size:.85rem">' + a.bank + '</td>' +
-      '<td style="padding:.7rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString('en-IN') + '</td>' +
-      '<td style="padding:.7rem"><span style="background:' + c + '22;color:' + c + ';padding:.2rem .65rem;border-radius:99px;font-size:.78rem;font-weight:700">' + a.status + '</span></td>' +
-      '<td style="padding:.7rem;display:flex;gap:.4rem"><button onclick="viewDetails(\'' + a.id + '\')" class="btn btn-outline btn-sm" style="font-size:.75rem">👁 View</button><button onclick="openModal(\'' + a.id + '\',\'' + a.fullName.replace(/'/g,"") + '\')" class="btn btn-primary btn-sm" style="font-size:.75rem">Update</button></td>' +
-      '</tr>';
+
+  function renderTable(apps) {
+    if (!apps.length) {
+      document.getElementById('adminAppsList').innerHTML = `
+        <div style="text-align:center;padding:3rem;color:var(--text-muted)">
+          <div style="font-size:3rem">📭</div>
+          <p style="margin-top:1rem">No applications found.</p>
+        </div>`;
+      return;
+    }
+    document.getElementById('adminAppsList').innerHTML = `
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:700px">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Applicant</th>
+          <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Course / College</th>
+          <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Bank</th>
+          <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Amount</th>
+          <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Status</th>
+          <th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Actions</th>
+        </tr></thead>
+        <tbody>${apps.map(a => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.75rem .5rem">
+              <div style="font-weight:600">${a.fullName || '—'}</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">${a.mobile || a.userEmail || ''}</div>
+            </td>
+            <td style="padding:.75rem .5rem">
+              <div style="font-size:.9rem">${a.course || '—'}</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">${a.college || '—'}</div>
+            </td>
+            <td style="padding:.75rem .5rem;font-size:.9rem">${a.bank || '—'}</td>
+            <td style="padding:.75rem .5rem;font-weight:700">₹${Number(a.loanAmount||0).toLocaleString('en-IN')}</td>
+            <td style="padding:.75rem .5rem">
+              <span style="background:${statusColor[a.status]||'#6b7280'}22;color:${statusColor[a.status]||'#6b7280'};padding:.2rem .65rem;border-radius:99px;font-size:.78rem;font-weight:700">
+                ${statusLabel[a.status] || a.status}
+              </span>
+            </td>
+            <td style="padding:.75rem .5rem">
+              <div style="display:flex;gap:.5rem">
+                <button onclick="viewDetails('${a.id}')" style="padding:.35rem .75rem;background:rgba(26,86,219,0.15);color:var(--primary);border:1px solid rgba(26,86,219,0.3);border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600">👁 View</button>
+                <button onclick="quickStatus('${a.id}','${a.status}')" style="padding:.35rem .75rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.82rem">✏️ Status</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`;
   }
-  html += '</tbody></table></div>';
-  document.getElementById('adminAppsList').innerHTML = html;
-}
 
-function filterApps() {
-  var search = document.getElementById('searchInput').value.toLowerCase();
-  var status = document.getElementById('statusFilter').value;
-  var bank = document.getElementById('bankFilter').value;
-  var filtered = [];
-  for (var i = 0; i < allApps.length; i++) {
-    var a = allApps[i];
-    var matchSearch = !search || (a.fullName||'').toLowerCase().includes(search) || (a.college||'').toLowerCase().includes(search);
-    var matchStatus = !status || a.status === status;
-    var matchBank = !bank || a.bank === bank;
-    if (matchSearch && matchStatus && matchBank) filtered.push(a);
+  function filterApps() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    const bank = document.getElementById('bankFilter').value;
+    const filtered = allApps.filter(a =>
+      (!search || (a.fullName||'').toLowerCase().includes(search) || (a.college||'').toLowerCase().includes(search)) &&
+      (!status || a.status === status) &&
+      (!bank || a.bank === bank)
+    );
+    renderTable(filtered);
   }
-  renderTable(filtered);
-}
 
-function openModal(id, name) {
-  editId = id;
-  document.getElementById('modalName').textContent = 'Update Status: ' + name;
-  document.getElementById('statusModal').style.display = 'flex';
-}
-
-function closeModal() { document.getElementById('statusModal').style.display = 'none'; }
-
-function saveStatus() {
-  var newStatus = document.getElementById('newStatus').value;
-  var apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
-  for (var i = 0; i < apps.length; i++) {
-    if (apps[i].id === editId) { apps[i].status = newStatus; break; }
-  }
-  localStorage.setItem('loanit_applications', JSON.stringify(apps));
-  closeModal();
   function viewDetails(id) {
-  var apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
-  var a = null;
-  for (var i=0; i<apps.length; i++) { if (apps[i].id===id) { a=apps[i]; break; } }
-  if (!a) return;
-  var modal = document.getElementById('statusModal');
-  document.getElementById('modalName').innerHTML = 
-    '<div style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:1rem">📋 Application Details</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:.85rem;font-weight:400">' +
-    '<div><strong>Name:</strong><br>'+a.fullName+'</div>' +
-    '<div><strong>Mobile:</strong><br>'+(a.mobile||'N/A')+'</div>' +
-    '<div><strong>Email:</strong><br>'+(a.email||'N/A')+'</div>' +
-    '<div><strong>PAN:</strong><br>'+(a.pan||'N/A')+'</div>' +
-    '<div><strong>Aadhaar:</strong><br>'+(a.aadhaar||'N/A')+'</div>' +
-    '<div><strong>Address:</strong><br>'+(a.address||'N/A')+'</div>' +
-    '<div><strong>Course:</strong><br>'+a.course+'</div>' +
-    '<div><strong>College:</strong><br>'+(a.college||'N/A')+'</div>' +
-    '<div><strong>Duration:</strong><br>'+(a.duration||'N/A')+' years</div>' +
-    '<div><strong>Marks/CGPA:</strong><br>'+(a.marks||'N/A')+'</div>' +
-    '<div><strong>Co-applicant:</strong><br>'+(a.coApplicant||'N/A')+'</div>' +
-    '<div><strong>Co-applicant Income:</strong><br>'+(a.coIncome ? '₹'+Number(a.coIncome).toLocaleString('en-IN') : 'N/A')+'</div>' +
-    '<div><strong>Bank:</strong><br>'+a.bank+'</div>' +
-    '<div><strong>Interest Rate:</strong><br>'+a.interestRate+'</div>' +
-    '<div><strong>Loan Amount:</strong><br>₹'+Number(a.loanAmount).toLocaleString('en-IN')+'</div>' +
-    '<div><strong>Status:</strong><br>'+a.status+'</div>' +
-    '<div style="grid-column:span 2"><strong>Submitted:</strong> '+new Date(a.submittedAt).toLocaleString('en-IN')+'</div>' +
-    '</div>';
-  editId = id;
-  document.getElementById('newStatus').value = a.status;
-  modal.style.display = 'flex';
-}
+    const a = allApps.find(x => x.id === id);
+    if (!a) return;
+    currentEditId = id;
+    document.getElementById('newStatus').value = a.status || 'submitted';
 
-loadApps();
-}
+    function di(label, value) {
+      return `<div class="detail-item"><div class="label">${label}</div><div class="value">${value || '—'}</div></div>`;
+    }
 
-function loadUsers() {
-  var users = JSON.parse(localStorage.getItem('loanit_users') || '[]');
-  if (!users.length) {
-    document.getElementById('usersList').innerHTML = '<p style="color:#94a3b8;padding:1rem">No registered users yet.</p>';
-    return;
+    document.getElementById('detailContent').innerHTML = `
+      <p class="section-title">👤 Personal Information</p>
+      <div class="detail-grid">
+        ${di('Full Name', a.fullName)}
+        ${di('Date of Birth', a.dob)}
+        ${di('Mobile', a.mobile)}
+        ${di('Email', a.email)}
+        ${di('PAN Number', a.pan)}
+        ${di('Aadhaar', a.aadhaar)}
+      </div>
+      <div class="detail-item" style="margin-bottom:.6rem"><div class="label">Address</div><div class="value">${a.address || '—'}</div></div>
+
+      <p class="section-title">🎓 Academic Information</p>
+      <div class="detail-grid">
+        ${di('Course', a.course)}
+        ${di('College / University', a.college)}
+        ${di('Duration', a.duration ? a.duration + ' Years' : '—')}
+        ${di('Admission Year', a.admYear)}
+        ${di('Marks / CGPA', a.marks)}
+        ${di('Co-applicant', a.coApplicant)}
+        ${di('Co-applicant Income', a.coIncome ? '₹' + Number(a.coIncome).toLocaleString('en-IN') : '—')}
+      </div>
+
+      <p class="section-title">🏦 Loan Information</p>
+      <div class="detail-grid">
+        ${di('Selected Bank', a.bank)}
+        ${di('Interest Rate', a.interestRate)}
+        ${di('Loan Amount', '₹' + Number(a.loanAmount||0).toLocaleString('en-IN'))}
+        ${di('Applied On', a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—')}
+        ${di('Application ID', a.id)}
+        ${di('Current Status', statusLabel[a.status] || a.status)}
+      </div>
+
+      ${a.statusHistory && a.statusHistory.length > 1 ? `
+      <p class="section-title">📋 Status History</p>
+      <div style="display:flex;flex-direction:column;gap:.4rem">
+        ${a.statusHistory.map(h => `
+          <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem .8rem;background:var(--bg);border-radius:8px">
+            <span style="width:10px;height:10px;border-radius:50%;background:${statusColor[h.status]||'#6b7280'};flex-shrink:0"></span>
+            <span style="font-weight:600;font-size:.88rem">${statusLabel[h.status]||h.status}</span>
+            <span style="color:var(--text-muted);font-size:.8rem;margin-left:auto">${new Date(h.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
+          </div>`).join('')}
+      </div>` : ''}`;
+
+    document.getElementById('detailModal').classList.add('open');
   }
-  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid #e2e8f0">' +
-    '<th style="text-align:left;padding:.6rem;color:#94a3b8;font-size:.8rem">Name</th>' +
-    '<th style="text-align:left;padding:.6rem;color:#94a3b8;font-size:.8rem">Email</th>' +
-    '<th style="text-align:left;padding:.6rem;color:#94a3b8;font-size:.8rem">Joined</th>' +
-    '</tr></thead><tbody>';
-  for (var i = 0; i < users.length; i++) {
-    var u = users[i];
-    html += '<tr style="border-bottom:1px solid #f1f5f9">' +
-      '<td style="padding:.6rem;font-weight:600">' + u.name + '</td>' +
-      '<td style="padding:.6rem;color:#64748b">' + u.email + '</td>' +
-      '<td style="padding:.6rem;color:#94a3b8;font-size:.82rem">' + new Date(u.createdAt).toLocaleDateString('en-IN') + '</td>' +
-      '</tr>';
-  }
-  html += '</tbody></table></div>';
-  document.getElementById('usersList').innerHTML = html;
-}
 
-loadApps();
+  function quickStatus(id, currentStatus) {
+    currentEditId = id;
+    // Find the app and open modal directly on status section
+    const a = allApps.find(x => x.id === id);
+    if (a) viewDetails(id);
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('open');
+    currentEditId = null;
+  }
+
+  function saveStatus() {
+    if (!currentEditId) return;
+    const newStatus = document.getElementById('newStatus').value;
+    updateAppStatus(currentEditId, newStatus);
+    showToast('Status updated to: ' + (statusLabel[newStatus] || newStatus), 'success');
+    closeDetailModal();
+    loadApplications();
+  }
+
+  function toggleUsers() {
+    const section = document.getElementById('usersSection');
+    if (section.style.display === 'none') {
+      section.style.display = 'block';
+      const users = getUsers();
+      document.getElementById('usersList').innerHTML = users.filter(u => u.role !== 'admin').length
+        ? `<table style="width:100%;border-collapse:collapse">
+            <thead><tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Name</th>
+              <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Email</th>
+              <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Joined</th>
+            </tr></thead>
+            <tbody>${users.filter(u => u.role !== 'admin').map(u => `
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.75rem;font-weight:600">${u.name}</td>
+                <td style="padding:.75rem;color:var(--text-muted)">${u.email}</td>
+                <td style="padding:.75rem;font-size:.85rem;color:var(--text-muted)">${new Date(u.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>`
+        : '<p style="color:var(--text-muted);padding:1rem">No registered students yet.</p>';
+    } else {
+      section.style.display = 'none';
+    }
+  }
+
+  // Close modal on overlay click
+  document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDetailModal();
+  });
+
+  loadApplications();
 </script>
 </body>
 </html>

@@ -19,6 +19,7 @@
       <a href="compare.html" class="nav-item"><span class="nav-icon">⚖️</span><span>Compare Banks</span></a>
       <a href="upload.html" class="nav-item"><span class="nav-icon">📁</span><span>Documents</span></a>
       <a href="emi.html" class="nav-item"><span class="nav-icon">🧮</span><span>EMI Calculator</span></a>
+      <a href="eligibility.html" class="nav-item"><span class="nav-icon">✅</span><span>Check Eligibility</span></a>
       <a href="chatbot.html" class="nav-item"><span class="nav-icon">🤖</span><span>AI Assistant</span></a>
     </nav>
     <div class="nav-bottom">
@@ -31,108 +32,111 @@
   <main class="main-content">
     <div class="page-header">
       <div>
-        <h1 class="page-title" id="welcomeMsg">Welcome!</h1>
-        <p class="page-subtitle">Track your loan applications and manage your profile</p>
+        <h1 class="page-title">My Dashboard</h1>
+        <p class="page-subtitle" id="welcomeMsg">Welcome back!</p>
       </div>
       <a href="register.html" class="btn btn-primary">+ Apply for Loan</a>
     </div>
 
     <!-- Stats -->
-    <div class="stats-grid" style="margin-bottom:2rem">
-      <div class="stat-card blue"><div class="stat-info"><div class="stat-num" id="totalApps">0</div><div class="stat-label">Total Applications</div></div></div>
-      <div class="stat-card yellow"><div class="stat-info"><div class="stat-num" id="pendingApps">0</div><div class="stat-label">Pending Review</div></div></div>
-      <div class="stat-card green"><div class="stat-info"><div class="stat-num" id="approvedApps">0</div><div class="stat-label">Approved</div></div></div>
-      <div class="stat-card purple"><div class="stat-info"><div class="stat-num" id="totalAmount">₹0</div><div class="stat-label">Total Applied</div></div></div>
+    <div class="stats-grid">
+      <div class="stat-card green"><div class="stat-icon">📋</div><div class="stat-info"><div class="stat-value" id="totalApps">0</div><div class="stat-label">Total Applications</div></div></div>
+      <div class="stat-card blue"><div class="stat-icon">⏳</div><div class="stat-info"><div class="stat-value" id="pendingApps">0</div><div class="stat-label">Under Review</div></div></div>
+      <div class="stat-card yellow"><div class="stat-icon">✅</div><div class="stat-info"><div class="stat-value" id="approvedApps">0</div><div class="stat-label">Approved</div></div></div>
+      <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-info"><div class="stat-value" id="totalAmount">₹0</div><div class="stat-label">Total Loan Applied</div></div></div>
     </div>
 
     <!-- Applications -->
-    <div class="card" style="margin-bottom:2rem">
-      <div class="card-header"><h2 class="card-title">My Applications</h2></div>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">My Applications</h2>
+      </div>
       <div id="appsList"></div>
     </div>
 
-    <!-- EMI Calculator -->
+    <!-- Quick EMI Calculator -->
     <div class="card">
-      <div class="card-header"><h2 class="card-title">Quick EMI Calculator</h2></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div class="form-group"><label>Loan Amount (₹)</label><input type="number" id="emiAmt" value="500000" oninput="calcEMI()"/></div>
-        <div class="form-group"><label>Interest Rate (%)</label><input type="number" id="emiRate" value="8.15" step="0.05" oninput="calcEMI()"/></div>
-        <div class="form-group"><label>Tenure (Years)</label><input type="number" id="emiYears" value="10" oninput="calcEMI()"/></div>
+      <h2 class="card-title">Quick EMI Calculator</h2>
+      <div class="form-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="form-group"><label>Loan Amount (₹)</label><input type="number" id="emiAmt" value="500000" oninput="calcQuickEMI()"/></div>
+        <div class="form-group"><label>Interest Rate (%)</label><input type="number" id="emiRate" value="8.15" step="0.01" oninput="calcQuickEMI()"/></div>
+        <div class="form-group"><label>Tenure (Years)</label><input type="number" id="emiYears" value="10" oninput="calcQuickEMI()"/></div>
       </div>
-      <div id="emiResult" style="display:flex;gap:1rem;flex-wrap:wrap"></div>
-      <div style="margin-top:1rem"><a href="emi.html" style="color:#1a56db;font-size:.85rem;font-weight:600">Full EMI Calculator with amortisation table →</a></div>
+      <div id="emiResult" style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1rem"></div>
     </div>
   </main>
 </div>
 
+<script src="app.js"></script>
 <script>
-var currentUser = JSON.parse(localStorage.getItem('loanit_user') || 'null');
-if (!currentUser) window.location.href = 'login.html';
-document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + currentUser.name + '!';
+  if (!isLoggedIn()) window.location.href = 'login.html';
 
-function doLogout() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; }
+  function doLogout() { logout(); }
 
-function loadApps() {
-  var all = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
-  var mine = [];
-  for (var i = 0; i < all.length; i++) {
-    if (all[i].userId === (currentUser.uid || currentUser.email)) mine.push(all[i]);
-  }
-  document.getElementById('totalApps').textContent = mine.length;
-  var pending = 0, approved = 0, total = 0;
-  for (var j = 0; j < mine.length; j++) {
-    if (mine[j].status === 'Submitted' || mine[j].status === 'Under Review') pending++;
-    if (mine[j].status === 'Approved' || mine[j].status === 'Disbursed') approved++;
-    total += parseFloat(mine[j].loanAmount || 0);
-  }
-  document.getElementById('pendingApps').textContent = pending;
-  document.getElementById('approvedApps').textContent = approved;
+  const user = getCurrentUser();
+  document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + (user?.name?.split(' ')[0] || 'Student') + '!';
+
+  const apps = getMyApplications();
+
+  // Stats
+  document.getElementById('totalApps').textContent = apps.length;
+  document.getElementById('pendingApps').textContent = apps.filter(a => ['submitted','under_review','document_pending'].includes(a.status)).length;
+  document.getElementById('approvedApps').textContent = apps.filter(a => a.status === 'approved').length;
+  const total = apps.reduce((s, a) => s + parseFloat(a.loanAmount || 0), 0);
   document.getElementById('totalAmount').textContent = '₹' + (total / 100000).toFixed(1) + 'L';
 
-  var colors = { 'Submitted':'#f59e0b', 'Under Review':'#3b82f6', 'Approved':'#10b981', 'Rejected':'#ef4444', 'Disbursed':'#8b5cf6' };
-  if (!mine.length) {
-    document.getElementById('appsList').innerHTML = '<div style="text-align:center;padding:3rem;color:#94a3b8"><div style="font-size:3rem;margin-bottom:1rem">📋</div><p>No applications yet.</p><a href="register.html" class="btn btn-primary" style="margin-top:1rem;display:inline-block">Apply Now</a></div>';
-    return;
-  }
-  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid #e2e8f0">' +
-    '<th style="text-align:left;padding:.75rem;color:#94a3b8;font-size:.82rem">Applicant</th>' +
-    '<th style="text-align:left;padding:.75rem;color:#94a3b8;font-size:.82rem">Course</th>' +
-    '<th style="text-align:left;padding:.75rem;color:#94a3b8;font-size:.82rem">Bank</th>' +
-    '<th style="text-align:left;padding:.75rem;color:#94a3b8;font-size:.82rem">Amount</th>' +
-    '<th style="text-align:left;padding:.75rem;color:#94a3b8;font-size:.82rem">Status</th>' +
-    '<th style="text-align:left;padding:.75rem;color:#94a3b8;font-size:.82rem">Date</th>' +
-    '</tr></thead><tbody>';
-  for (var k = 0; k < mine.length; k++) {
-    var a = mine[k];
-    var c = colors[a.status] || '#6b7280';
-    var date = new Date(a.submittedAt).toLocaleDateString('en-IN');
-    html += '<tr style="border-bottom:1px solid #f1f5f9">' +
-      '<td style="padding:.75rem;font-weight:600">' + a.fullName + '</td>' +
-      '<td style="padding:.75rem;color:#64748b;font-size:.88rem">' + a.course + '</td>' +
-      '<td style="padding:.75rem;font-size:.88rem">' + a.bank + '</td>' +
-      '<td style="padding:.75rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString('en-IN') + '</td>' +
-      '<td style="padding:.75rem"><span style="background:' + c + '22;color:' + c + ';padding:.2rem .7rem;border-radius:99px;font-size:.78rem;font-weight:700">' + a.status + '</span></td>' +
-      '<td style="padding:.75rem;color:#94a3b8;font-size:.82rem">' + date + '</td>' +
-      '</tr>';
-  }
-  html += '</tbody></table></div>';
-  document.getElementById('appsList').innerHTML = html;
-}
+  // Render applications
+  const statusColor = { submitted:'#f59e0b', under_review:'#3b82f6', document_pending:'#f59e0b', approved:'#10b981', rejected:'#ef4444', disbursed:'#8b5cf6' };
+  const statusLabel = { submitted:'Submitted', under_review:'Under Review', document_pending:'Docs Pending', approved:'Approved', rejected:'Rejected', disbursed:'Disbursed' };
 
-function calcEMI() {
-  var P = parseFloat(document.getElementById('emiAmt').value) || 0;
-  var r = (parseFloat(document.getElementById('emiRate').value) || 0) / 12 / 100;
-  var n = (parseFloat(document.getElementById('emiYears').value) || 0) * 12;
-  var emi = (r && n) ? P * r * Math.pow(1+r,n) / (Math.pow(1+r,n) - 1) : (n ? P/n : 0);
-  var total = emi * n;
-  document.getElementById('emiResult').innerHTML =
-    '<div class="stat-card blue" style="flex:1;min-width:140px"><div class="stat-info"><div class="stat-num">₹' + Math.round(emi).toLocaleString('en-IN') + '</div><div class="stat-label">Monthly EMI</div></div></div>' +
-    '<div class="stat-card green" style="flex:1;min-width:140px"><div class="stat-info"><div class="stat-num">₹' + Math.round(total).toLocaleString('en-IN') + '</div><div class="stat-label">Total Payable</div></div></div>' +
-    '<div class="stat-card yellow" style="flex:1;min-width:140px"><div class="stat-info"><div class="stat-num">₹' + Math.round(total-P).toLocaleString('en-IN') + '</div><div class="stat-label">Total Interest</div></div></div>';
-}
+  if (!apps.length) {
+    document.getElementById('appsList').innerHTML = `
+      <div style="text-align:center;padding:3rem;color:var(--text-muted)">
+        <div style="font-size:3rem;margin-bottom:1rem">📋</div>
+        <p>No applications yet.</p>
+        <a href="register.html" class="btn btn-primary" style="margin-top:1rem;display:inline-block">Apply Now</a>
+      </div>`;
+  } else {
+    document.getElementById('appsList').innerHTML = `
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Course</th>
+          <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Bank</th>
+          <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Amount</th>
+          <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Date</th>
+          <th style="text-align:left;padding:.75rem;color:var(--text-muted);font-size:.85rem">Status</th>
+        </tr></thead>
+        <tbody>${apps.map(a => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.75rem">
+              <div style="font-weight:600">${a.course}</div>
+              <div style="font-size:.78rem;color:var(--text-muted)">${a.college}</div>
+            </td>
+            <td style="padding:.75rem;font-size:.9rem">${a.bank}</td>
+            <td style="padding:.75rem;font-weight:700">₹${Number(a.loanAmount).toLocaleString('en-IN')}</td>
+            <td style="padding:.75rem;font-size:.85rem;color:var(--text-muted)">${new Date(a.createdAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+            <td style="padding:.75rem">
+              <span style="background:${statusColor[a.status]||'#6b7280'}22;color:${statusColor[a.status]||'#6b7280'};padding:.25rem .75rem;border-radius:99px;font-size:.8rem;font-weight:700">
+                ${statusLabel[a.status] || a.status}
+              </span>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
 
-loadApps();
-calcEMI();
+  function calcQuickEMI() {
+    const P = parseFloat(document.getElementById('emiAmt').value) || 0;
+    const r = (parseFloat(document.getElementById('emiRate').value) || 0) / 12 / 100;
+    const n = (parseFloat(document.getElementById('emiYears').value) || 0) * 12;
+    const emi = r ? P * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1) : (n ? P/n : 0);
+    const total = emi * n;
+    document.getElementById('emiResult').innerHTML = `
+      <div class="stat-card blue" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹${Math.round(emi).toLocaleString('en-IN')}</div><div class="stat-label">Monthly EMI</div></div></div>
+      <div class="stat-card green" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹${Math.round(total).toLocaleString('en-IN')}</div><div class="stat-label">Total Payable</div></div></div>
+      <div class="stat-card yellow" style="flex:1;min-width:150px"><div class="stat-info"><div class="stat-value">₹${Math.round(total-P).toLocaleString('en-IN')}</div><div class="stat-label">Total Interest</div></div></div>`;
+  }
+  calcQuickEMI();
 </script>
 </body>
 </html>
