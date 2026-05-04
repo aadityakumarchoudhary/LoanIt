@@ -71,7 +71,7 @@
 
 <!-- Status Modal -->
 <div id="statusModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
-  <div style="background:white;border-radius:16px;padding:2rem;min-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+  <div style="background:white;border-radius:16px;padding:2rem;min-width:580px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
     <h3 id="modalName" style="margin-bottom:1.5rem;color:#0f172a"></h3>
     <div class="form-group">
       <label>New Status</label>
@@ -137,7 +137,7 @@ function renderTable(apps) {
       '<td style="padding:.7rem;font-size:.85rem">' + a.bank + '</td>' +
       '<td style="padding:.7rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString('en-IN') + '</td>' +
       '<td style="padding:.7rem"><span style="background:' + c + '22;color:' + c + ';padding:.2rem .65rem;border-radius:99px;font-size:.78rem;font-weight:700">' + a.status + '</span></td>' +
-      '<td style="padding:.7rem"><button onclick="openModal(\'' + a.id + '\',\'' + a.fullName.replace(/'/g,"") + '\')" class="btn btn-outline btn-sm">Update</button></td>' +
+      '<td style="padding:.7rem;display:flex;gap:.4rem"><button onclick="viewDetails(\'' + a.id + '\')" class="btn btn-outline btn-sm" style="font-size:.75rem">👁 View</button><button onclick="openModal(\'' + a.id + '\',\'' + a.fullName.replace(/'/g,"") + '\')" class="btn btn-primary btn-sm" style="font-size:.75rem">Update</button></td>' +
       '</tr>';
   }
   html += '</tbody></table></div>';
@@ -175,7 +175,39 @@ function saveStatus() {
   }
   localStorage.setItem('loanit_applications', JSON.stringify(apps));
   closeModal();
-  loadApps();
+  function viewDetails(id) {
+  var apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  var a = null;
+  for (var i=0; i<apps.length; i++) { if (apps[i].id===id) { a=apps[i]; break; } }
+  if (!a) return;
+  var modal = document.getElementById('statusModal');
+  document.getElementById('modalName').innerHTML = 
+    '<div style="font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:1rem">📋 Application Details</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;font-size:.85rem;font-weight:400">' +
+    '<div><strong>Name:</strong><br>'+a.fullName+'</div>' +
+    '<div><strong>Mobile:</strong><br>'+(a.mobile||'N/A')+'</div>' +
+    '<div><strong>Email:</strong><br>'+(a.email||'N/A')+'</div>' +
+    '<div><strong>PAN:</strong><br>'+(a.pan||'N/A')+'</div>' +
+    '<div><strong>Aadhaar:</strong><br>'+(a.aadhaar||'N/A')+'</div>' +
+    '<div><strong>Address:</strong><br>'+(a.address||'N/A')+'</div>' +
+    '<div><strong>Course:</strong><br>'+a.course+'</div>' +
+    '<div><strong>College:</strong><br>'+(a.college||'N/A')+'</div>' +
+    '<div><strong>Duration:</strong><br>'+(a.duration||'N/A')+' years</div>' +
+    '<div><strong>Marks/CGPA:</strong><br>'+(a.marks||'N/A')+'</div>' +
+    '<div><strong>Co-applicant:</strong><br>'+(a.coApplicant||'N/A')+'</div>' +
+    '<div><strong>Co-applicant Income:</strong><br>'+(a.coIncome ? '₹'+Number(a.coIncome).toLocaleString('en-IN') : 'N/A')+'</div>' +
+    '<div><strong>Bank:</strong><br>'+a.bank+'</div>' +
+    '<div><strong>Interest Rate:</strong><br>'+a.interestRate+'</div>' +
+    '<div><strong>Loan Amount:</strong><br>₹'+Number(a.loanAmount).toLocaleString('en-IN')+'</div>' +
+    '<div><strong>Status:</strong><br>'+a.status+'</div>' +
+    '<div style="grid-column:span 2"><strong>Submitted:</strong> '+new Date(a.submittedAt).toLocaleString('en-IN')+'</div>' +
+    '</div>';
+  editId = id;
+  document.getElementById('newStatus').value = a.status;
+  modal.style.display = 'flex';
+}
+
+loadApps();
 }
 
 function loadUsers() {
