@@ -12,11 +12,10 @@
   <aside class="sidebar">
     <a href="index.html" class="nav-brand" style="display:flex;align-items:center;gap:0.6rem">
       <img src="logo.jpg" class="nav-logo-img" alt="LoanIt"/>
-      <span style="font-size:.75rem;background:rgba(255,255,255,0.15);padding:2px 10px;border-radius:99px;color:rgba(255,255,255,0.85);font-weight:700">ADMIN</span>
     </a>
     <nav class="nav-links">
-      <a href="admin.html" class="nav-item active"><span class="nav-icon">🛡️</span><span>All Applications</span></a>
-      <a href="#" class="nav-item" onclick="loadUsers()"><span class="nav-icon">👥</span><span>Users</span></a>
+      <a href="admin.html" class="nav-item active"><span class="nav-icon">🛡️</span><span>Admin Panel</span></a>
+      <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Home</span></a>
     </nav>
     <div class="nav-bottom">
       <button onclick="doLogout()" class="nav-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;">
@@ -28,69 +27,55 @@
   <main class="main-content">
     <div class="page-header">
       <div>
-        <h1 class="page-title">Admin Panel</h1>
+        <h1 class="page-title">Admin Dashboard</h1>
         <p class="page-subtitle">Manage all loan applications</p>
       </div>
-      <button class="btn btn-primary" onclick="loadApplications()">🔄 Refresh</button>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-info"><div class="stat-value" id="aTotal">0</div><div class="stat-label">Total Applications</div></div></div>
-      <div class="stat-card yellow"><div class="stat-icon">⏳</div><div class="stat-info"><div class="stat-value" id="aPending">0</div><div class="stat-label">Pending Review</div></div></div>
-      <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-info"><div class="stat-value" id="aApproved">0</div><div class="stat-label">Approved</div></div></div>
-      <div class="stat-card purple"><div class="stat-icon">💰</div><div class="stat-info"><div class="stat-value" id="aAmount">₹0</div><div class="stat-label">Total Loan Value</div></div></div>
+    <div class="stats-grid" style="margin-bottom:2rem">
+      <div class="stat-card blue"><div class="stat-info"><div class="stat-num" id="aTotal">0</div><div class="stat-label">Total Applications</div></div></div>
+      <div class="stat-card yellow"><div class="stat-info"><div class="stat-num" id="aPending">0</div><div class="stat-label">Pending</div></div></div>
+      <div class="stat-card green"><div class="stat-info"><div class="stat-num" id="aApproved">0</div><div class="stat-label">Approved</div></div></div>
+      <div class="stat-card purple"><div class="stat-info"><div class="stat-num" id="aAmount">₹0</div><div class="stat-label">Total Amount</div></div></div>
     </div>
 
-    <!-- Filter Bar -->
-    <div class="card" style="padding:1rem 1.5rem">
-      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
-        <input type="text" id="searchInput" placeholder="Search by name or college..." oninput="filterApps()" style="flex:1;min-width:200px;padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)"/>
-        <select id="statusFilter" onchange="filterApps()" style="padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:1.5rem;padding:1rem">
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+        <input type="text" id="searchInput" placeholder="Search by name or college..." style="flex:1;min-width:200px;padding:.6rem .9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit" oninput="filterApps()"/>
+        <select id="statusFilter" onchange="filterApps()" style="padding:.6rem .9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit">
           <option value="">All Status</option>
-          <option>Submitted</option>
-          <option>Under Review</option>
-          <option>Approved</option>
-          <option>Rejected</option>
-          <option>Disbursed</option>
+          <option>Submitted</option><option>Under Review</option><option>Approved</option><option>Rejected</option><option>Disbursed</option>
         </select>
-        <select id="bankFilter" onchange="filterApps()" style="padding:.6rem 1rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+        <select id="bankFilter" onchange="filterApps()" style="padding:.6rem .9rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit">
           <option value="">All Banks</option>
-          <option>State Bank of India</option>
-          <option>HDFC Bank</option>
-          <option>Axis Bank</option>
-          <option>Bank of Baroda</option>
-          <option>Union Bank</option>
-          <option>Punjab National Bank</option>
+          <option>State Bank of India</option><option>Union Bank</option><option>Bank of Baroda</option><option>Punjab National Bank</option><option>HDFC Bank</option><option>Axis Bank</option>
         </select>
       </div>
     </div>
 
-    <!-- Applications Table -->
-    <div class="card">
-      <div id="adminAppsList">
-        <div style="text-align:center;padding:3rem;color:var(--text-muted)">
-          <div style="font-size:2rem;margin-bottom:1rem">⏳</div>
-          <p>Loading applications from Firebase...</p>
-        </div>
-      </div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-header"><h2 class="card-title">All Applications</h2></div>
+      <div id="adminAppsList"></div>
     </div>
 
-    <!-- Users Section (hidden by default) -->
-    <div class="card" id="usersSection" style="display:none">
-      <h2 class="card-title">Registered Users</h2>
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+        <h2 class="card-title">Registered Users</h2>
+        <button class="btn btn-outline btn-sm" onclick="loadUsers()">Refresh</button>
+      </div>
       <div id="usersList"></div>
     </div>
   </main>
 </div>
 
-<!-- Status Update Modal -->
-<div id="statusModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center">
-  <div class="card" style="width:90%;max-width:400px;padding:2rem">
-    <h3 id="modalName" style="margin-bottom:1rem"></h3>
+<!-- Status Modal -->
+<div id="statusModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:16px;padding:2rem;min-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <h3 id="modalName" style="margin-bottom:1.5rem;color:#0f172a"></h3>
     <div class="form-group">
-      <label>Update Status</label>
-      <select id="newStatus" style="width:100%;padding:.75rem;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text)">
+      <label>New Status</label>
+      <select id="newStatus" style="width:100%;padding:.7rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:1rem">
         <option>Submitted</option>
         <option>Under Review</option>
         <option>Approved</option>
@@ -98,88 +83,125 @@
         <option>Disbursed</option>
       </select>
     </div>
-    <div style="display:flex;gap:1rem;margin-top:1rem">
-      <button class="btn btn-outline" onclick="closeModal()" style="flex:1">Cancel</button>
-      <button class="btn btn-primary" onclick="saveStatus()" style="flex:1">Save</button>
+    <div style="display:flex;gap:1rem;margin-top:1.5rem">
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveStatus()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-const role = localStorage.getItem('loanit_role');
-if (role !== 'admin') window.location.href = 'login.html';
+if (localStorage.getItem('loanit_role') !== 'admin') window.location.href = 'login.html';
 
-window.doLogout = function() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; };
+function doLogout() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; }
 
-let allApps = [];
-let editId = null;
+var allApps = [];
+var editId = null;
 
-window.loadApplications = function() {
+function loadApps() {
   allApps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
-  renderStats(allApps);
+  var pending = 0, approved = 0, total = 0;
+  for (var i = 0; i < allApps.length; i++) {
+    if (allApps[i].status === 'Submitted' || allApps[i].status === 'Under Review') pending++;
+    if (allApps[i].status === 'Approved' || allApps[i].status === 'Disbursed') approved++;
+    total += parseFloat(allApps[i].loanAmount || 0);
+  }
+  document.getElementById('aTotal').textContent = allApps.length;
+  document.getElementById('aPending').textContent = pending;
+  document.getElementById('aApproved').textContent = approved;
+  document.getElementById('aAmount').textContent = '₹' + (total / 100000).toFixed(1) + 'L';
   renderTable(allApps);
-};
-
-function renderStats(apps) {
-  document.getElementById('aTotal').textContent = apps.length;
-  document.getElementById('aPending').textContent = apps.filter(a => ['Submitted','Under Review'].includes(a.status)).length;
-  document.getElementById('aApproved').textContent = apps.filter(a => a.status === 'Approved').length;
-  const total = apps.reduce((s,a) => s + parseFloat(a.loanAmount||0), 0);
-  document.getElementById('aAmount').textContent = '₹' + (total/100000).toFixed(1) + 'L';
+  loadUsers();
 }
 
 function renderTable(apps) {
   if (!apps.length) {
-    document.getElementById('adminAppsList').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem">📭</div><p>No applications found.</p></div>';
+    document.getElementById('adminAppsList').innerHTML = '<div style="text-align:center;padding:3rem;color:#94a3b8"><div style="font-size:3rem">📭</div><p>No applications found.</p></div>';
     return;
   }
-  const statusColor = { 'Submitted':'#f59e0b','Under Review':'#3b82f6','Approved':'#10b981','Rejected':'#ef4444','Disbursed':'#8b5cf6' };
-  document.getElementById('adminAppsList').innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:700px"><thead><tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Applicant</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Course</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Bank</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Amount</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Status</th><th style="text-align:left;padding:.75rem .5rem;color:var(--text-muted);font-size:.8rem">Action</th></tr></thead><tbody>' +
-    apps.map(a => '<tr style="border-bottom:1px solid var(--border)"><td style="padding:.75rem .5rem">' + a.fullName + '</td><td style="padding:.75rem .5rem;font-size:.85rem;color:var(--text-muted)">' + a.course + '</td><td style="padding:.75rem .5rem;font-size:.85rem">' + a.bank + '</td><td style="padding:.75rem .5rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString("en-IN") + '</td><td style="padding:.75rem .5rem"><span style="background:' + (statusColor[a.status]||"#6b7280") + '22;color:' + (statusColor[a.status]||"#6b7280") + ';padding:.2rem .6rem;border-radius:99px;font-size:.78rem;font-weight:700">' + a.status + '</span></td><td style="padding:.75rem .5rem"><button onclick="openModal('' + a.id + '','' + a.fullName + '')" class="btn btn-outline btn-sm">Update</button></td></tr>').join('') +
-    '</tbody></table></div>';
+  var colors = { 'Submitted':'#f59e0b','Under Review':'#3b82f6','Approved':'#10b981','Rejected':'#ef4444','Disbursed':'#8b5cf6' };
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:700px"><thead><tr style="border-bottom:1px solid #e2e8f0">' +
+    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Applicant</th>' +
+    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Course</th>' +
+    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Bank</th>' +
+    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Amount</th>' +
+    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Status</th>' +
+    '<th style="text-align:left;padding:.7rem;color:#94a3b8;font-size:.8rem">Action</th>' +
+    '</tr></thead><tbody>';
+  for (var i = 0; i < apps.length; i++) {
+    var a = apps[i];
+    var c = colors[a.status] || '#6b7280';
+    html += '<tr style="border-bottom:1px solid #f1f5f9">' +
+      '<td style="padding:.7rem;font-weight:600">' + a.fullName + '</td>' +
+      '<td style="padding:.7rem;color:#64748b;font-size:.85rem">' + a.course + '</td>' +
+      '<td style="padding:.7rem;font-size:.85rem">' + a.bank + '</td>' +
+      '<td style="padding:.7rem;font-weight:700">₹' + Number(a.loanAmount).toLocaleString('en-IN') + '</td>' +
+      '<td style="padding:.7rem"><span style="background:' + c + '22;color:' + c + ';padding:.2rem .65rem;border-radius:99px;font-size:.78rem;font-weight:700">' + a.status + '</span></td>' +
+      '<td style="padding:.7rem"><button onclick="openModal(\'' + a.id + '\',\'' + a.fullName.replace(/'/g,"") + '\')" class="btn btn-outline btn-sm">Update</button></td>' +
+      '</tr>';
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('adminAppsList').innerHTML = html;
 }
 
-window.filterApps = function() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const status = document.getElementById('statusFilter').value;
-  const bank = document.getElementById('bankFilter').value;
-  const filtered = allApps.filter(a =>
-    (!search || a.fullName?.toLowerCase().includes(search) || a.college?.toLowerCase().includes(search)) &&
-    (!status || a.status === status) &&
-    (!bank || a.bank === bank)
-  );
+function filterApps() {
+  var search = document.getElementById('searchInput').value.toLowerCase();
+  var status = document.getElementById('statusFilter').value;
+  var bank = document.getElementById('bankFilter').value;
+  var filtered = [];
+  for (var i = 0; i < allApps.length; i++) {
+    var a = allApps[i];
+    var matchSearch = !search || (a.fullName||'').toLowerCase().includes(search) || (a.college||'').toLowerCase().includes(search);
+    var matchStatus = !status || a.status === status;
+    var matchBank = !bank || a.bank === bank;
+    if (matchSearch && matchStatus && matchBank) filtered.push(a);
+  }
   renderTable(filtered);
-};
+}
 
-window.openModal = function(id, name) {
+function openModal(id, name) {
   editId = id;
-  document.getElementById('modalName').textContent = 'Update: ' + name;
+  document.getElementById('modalName').textContent = 'Update Status: ' + name;
   document.getElementById('statusModal').style.display = 'flex';
-};
+}
 
-window.closeModal = function() { document.getElementById('statusModal').style.display = 'none'; };
+function closeModal() { document.getElementById('statusModal').style.display = 'none'; }
 
-window.saveStatus = function() {
-  const newStatus = document.getElementById('newStatus').value;
-  const apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
-  const idx = apps.findIndex(a => a.id === editId);
-  if (idx >= 0) { apps[idx].status = newStatus; localStorage.setItem('loanit_applications', JSON.stringify(apps)); }
+function saveStatus() {
+  var newStatus = document.getElementById('newStatus').value;
+  var apps = JSON.parse(localStorage.getItem('loanit_applications') || '[]');
+  for (var i = 0; i < apps.length; i++) {
+    if (apps[i].id === editId) { apps[i].status = newStatus; break; }
+  }
+  localStorage.setItem('loanit_applications', JSON.stringify(apps));
   closeModal();
-  loadApplications();
-};
+  loadApps();
+}
 
-window.loadUsers = function() {
-  const users = JSON.parse(localStorage.getItem('loanit_users') || '[]');
-  document.getElementById('usersSection').style.display = 'block';
-  document.getElementById('usersList').innerHTML = users.length ?
-    '<table style="width:100%;border-collapse:collapse">' +
-    '<thead><tr><th style="text-align:left;padding:.6rem;color:var(--text-muted);font-size:.8rem">Name</th><th style="text-align:left;padding:.6rem;color:var(--text-muted);font-size:.8rem">Email</th><th style="text-align:left;padding:.6rem;color:var(--text-muted);font-size:.8rem">Joined</th></tr></thead><tbody>' +
-    users.map(u => '<tr style="border-bottom:1px solid var(--border)"><td style="padding:.6rem">' + u.name + '</td><td style="padding:.6rem;color:var(--text-muted)">' + u.email + '</td><td style="padding:.6rem;color:var(--text-muted);font-size:.82rem">' + new Date(u.createdAt).toLocaleDateString('en-IN') + '</td></tr>').join('') +
-    '</tbody></table>' :
-    '<p style="color:var(--text-muted);padding:1rem">No registered users yet.</p>';
-};
+function loadUsers() {
+  var users = JSON.parse(localStorage.getItem('loanit_users') || '[]');
+  if (!users.length) {
+    document.getElementById('usersList').innerHTML = '<p style="color:#94a3b8;padding:1rem">No registered users yet.</p>';
+    return;
+  }
+  var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:1px solid #e2e8f0">' +
+    '<th style="text-align:left;padding:.6rem;color:#94a3b8;font-size:.8rem">Name</th>' +
+    '<th style="text-align:left;padding:.6rem;color:#94a3b8;font-size:.8rem">Email</th>' +
+    '<th style="text-align:left;padding:.6rem;color:#94a3b8;font-size:.8rem">Joined</th>' +
+    '</tr></thead><tbody>';
+  for (var i = 0; i < users.length; i++) {
+    var u = users[i];
+    html += '<tr style="border-bottom:1px solid #f1f5f9">' +
+      '<td style="padding:.6rem;font-weight:600">' + u.name + '</td>' +
+      '<td style="padding:.6rem;color:#64748b">' + u.email + '</td>' +
+      '<td style="padding:.6rem;color:#94a3b8;font-size:.82rem">' + new Date(u.createdAt).toLocaleDateString('en-IN') + '</td>' +
+      '</tr>';
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('usersList').innerHTML = html;
+}
 
-loadApplications();
+loadApps();
 </script>
 </body>
 </html>

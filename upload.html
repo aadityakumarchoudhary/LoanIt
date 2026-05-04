@@ -3,19 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LoanIt – Documents</title>
+<title>LoanIt – Upload Documents</title>
 <link rel="stylesheet" href="style.css"/>
 <link rel="icon" href="logo.jpg" type="image/jpeg"/>
-<style>
-.doc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; }
-.doc-card { background:var(--surface); border:2px dashed var(--border); border-radius:14px; padding:1.5rem; text-align:center; cursor:pointer; transition:.2s; }
-.doc-card:hover { border-color:var(--primary); background:rgba(26,86,219,0.05); }
-.doc-card.uploaded { border-style:solid; border-color:#10b981; background:rgba(16,185,129,0.05); }
-.doc-icon { font-size:2rem; margin-bottom:.5rem; }
-.doc-name { font-weight:600; font-size:.9rem; margin-bottom:.25rem; }
-.doc-status { font-size:.78rem; color:var(--text-muted); }
-.doc-card.uploaded .doc-status { color:#10b981; }
-</style>
 </head>
 <body>
 <div class="app-layout">
@@ -28,6 +18,8 @@
       <a href="register.html" class="nav-item"><span class="nav-icon">📝</span><span>Apply for Loan</span></a>
       <a href="compare.html" class="nav-item"><span class="nav-icon">⚖️</span><span>Compare Banks</span></a>
       <a href="upload.html" class="nav-item active"><span class="nav-icon">📁</span><span>Documents</span></a>
+      <a href="emi.html" class="nav-item"><span class="nav-icon">🧮</span><span>EMI Calculator</span></a>
+      <a href="chatbot.html" class="nav-item"><span class="nav-icon">🤖</span><span>AI Assistant</span></a>
     </nav>
     <div class="nav-bottom">
       <button onclick="doLogout()" class="nav-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;">
@@ -39,74 +31,82 @@
   <main class="main-content">
     <div class="page-header">
       <div>
-        <h1 class="page-title">Document Upload</h1>
-        <p class="page-subtitle">Upload required documents for your loan application</p>
+        <h1 class="page-title">Upload Documents</h1>
+        <p class="page-subtitle">Upload all required documents for your loan application</p>
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:1.5rem;padding:1rem 1.5rem;background:rgba(26,86,219,0.08);border:1px solid rgba(26,86,219,0.2)">
-      <p style="color:var(--primary);font-size:.9rem">📌 <strong>Note:</strong> Documents are saved as metadata in Firebase. In a production app, files would be stored in Firebase Storage.</p>
+    <div class="card" style="margin-bottom:1.5rem;padding:1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <span style="font-weight:700;color:#0f172a">Upload Progress</span>
+        <span id="docProgressLabel" style="font-size:.85rem;color:#64748b">0 of 7 documents</span>
+      </div>
+      <div style="height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden">
+        <div id="docProgress" style="height:100%;background:linear-gradient(90deg,#1a56db,#0ea5e9);border-radius:99px;transition:width .4s;width:0%"></div>
+      </div>
     </div>
 
     <div class="card">
-      <h2 class="card-title">Required Documents</h2>
-      <div class="doc-grid" id="docGrid"></div>
-    </div>
-
-    <div class="card" id="uploadedSection" style="display:none">
-      <h2 class="card-title">Uploaded Documents</h2>
-      <div id="uploadedList"></div>
+      <h2 class="card-title" style="margin-bottom:1.5rem">Required Documents</h2>
+      <div id="docsList"></div>
     </div>
   </main>
 </div>
 
-<input type="file" id="fileInput" style="display:none" onchange="handleFile(event)"/>
-
 <script>
-const user = JSON.parse(localStorage.getItem('loanit_user') || 'null');
-if (!user) window.location.href = 'login.html';
-else if (document.getElementById('uploadUserName')) document.getElementById('uploadUserName').textContent = user.name;
+var currentUser = JSON.parse(localStorage.getItem('loanit_user') || 'null');
+if (!currentUser) window.location.href = 'login.html';
 
-window.doLogout = function() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; };
+function doLogout() { localStorage.removeItem('loanit_user'); localStorage.removeItem('loanit_role'); window.location.href = 'login.html'; }
 
-const DOCS = [
-  { id:'aadhaar', label:'Aadhaar Card', required:true },
-  { id:'pan', label:'PAN Card', required:true },
-  { id:'marksheet', label:'10th/12th Marksheet', required:true },
-  { id:'admission', label:'Admission Letter', required:true },
-  { id:'income', label:'Income Certificate (Co-applicant)', required:true },
-  { id:'photo', label:'Passport Photo', required:false },
-  { id:'bank', label:'Bank Statement (6 months)', required:false },
+var DOCS = [
+  { id:'aadhaar',   label:'Aadhaar Card',                    required:true  },
+  { id:'pan',       label:'PAN Card',                         required:true  },
+  { id:'marksheet', label:'10th & 12th Marksheets',           required:true  },
+  { id:'admission', label:'College Admission Letter',          required:true  },
+  { id:'income',    label:'Income Certificate (Co-applicant)', required:true  },
+  { id:'photo',     label:'Passport Size Photo',               required:false },
+  { id:'bank',      label:'Bank Statement (6 months)',         required:false },
 ];
 
-let uploaded = JSON.parse(localStorage.getItem('loanit_docs_' + user.uid) || '{}');
+var uploaded = JSON.parse(localStorage.getItem('loanit_docs_' + currentUser.uid) || '{}');
 
 function renderDocs() {
-  const container = document.getElementById('docsList');
-  if (!container) return;
-  container.innerHTML = DOCS.map(d => {
-    const done = !!uploaded[d.id];
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;border:1.5px solid ' + (done ? '#10b981' : 'var(--border)') + ';border-radius:12px;margin-bottom:.75rem;background:' + (done ? 'rgba(16,185,129,0.08)' : 'white') + '">' +
-      '<div style="display:flex;align-items:center;gap:.75rem"><span style="font-size:1.3rem">' + (done ? '✅' : '📄') + '</span><div><div style="font-weight:600;font-size:.9rem">' + d.label + (d.required ? ' <span style="color:#ef4444;font-size:.75rem">*Required</span>' : '') + '</div>' + (done ? '<div style="font-size:.78rem;color:#10b981">Uploaded</div>' : '<div style="font-size:.78rem;color:var(--text-muted)">Not uploaded</div>') + '</div></div>' +
-      '<label style="cursor:pointer;padding:.4rem .85rem;border-radius:8px;font-size:.82rem;font-weight:600;background:' + (done ? '#10b981' : 'var(--primary)') + ';color:white">' + (done ? 'Replace' : 'Upload') + '<input type="file" style="display:none" onchange="handleUpload('' + d.id + '', this)"/></label></div>';
-  }).join('');
+  var html = '';
+  for (var i = 0; i < DOCS.length; i++) {
+    var d = DOCS[i];
+    var done = !!uploaded[d.id];
+    var borderColor = done ? '#10b981' : '#e2e8f0';
+    var bg = done ? 'rgba(16,185,129,0.07)' : 'white';
+    var statusHtml = done
+      ? '<div style="font-size:.78rem;color:#10b981;font-weight:600">✅ Uploaded: ' + uploaded[d.id].name + '</div>'
+      : '<div style="font-size:.78rem;color:#94a3b8">Not uploaded yet</div>';
+    var btnColor = done ? '#10b981' : '#1a56db';
+    var btnLabel = done ? 'Replace' : 'Upload';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border:1.5px solid ' + borderColor + ';border-radius:12px;margin-bottom:.75rem;background:' + bg + ';transition:.2s">' +
+      '<div style="display:flex;align-items:center;gap:.85rem">' +
+      '<span style="font-size:1.5rem">' + (done ? '✅' : '📄') + '</span>' +
+      '<div><div style="font-weight:600;font-size:.92rem">' + d.label + (d.required ? ' <span style="color:#ef4444;font-size:.72rem">Required</span>' : ' <span style="color:#94a3b8;font-size:.72rem">Optional</span>') + '</div>' + statusHtml + '</div></div>' +
+      '<label style="cursor:pointer;padding:.45rem .9rem;border-radius:8px;font-size:.82rem;font-weight:600;background:' + btnColor + ';color:white;white-space:nowrap">' + btnLabel + '<input type="file" id="file_' + d.id + '" style="display:none" onchange="handleUpload(\'' + d.id + '\',this)"/></label>' +
+      '</div>';
+  }
+  document.getElementById('docsList').innerHTML = html;
   updateProgress();
 }
 
-window.handleUpload = function(id, input) {
-  if (!input.files[0]) return;
+function handleUpload(id, input) {
+  if (!input.files || !input.files[0]) return;
   uploaded[id] = { name: input.files[0].name, size: input.files[0].size, uploadedAt: new Date().toISOString() };
-  localStorage.setItem('loanit_docs_' + user.uid, JSON.stringify(uploaded));
+  localStorage.setItem('loanit_docs_' + currentUser.uid, JSON.stringify(uploaded));
   renderDocs();
-};
+}
 
 function updateProgress() {
-  const done = DOCS.filter(d => uploaded[d.id]).length;
-  const pct = Math.round(done / DOCS.length * 100);
-  const bar = document.getElementById('docProgress');
-  const label = document.getElementById('docProgressLabel');
-  if (bar) bar.style.width = pct + '%';
-  if (label) label.textContent = done + ' of ' + DOCS.length + ' documents uploaded (' + pct + '%)';
+  var done = 0;
+  for (var i = 0; i < DOCS.length; i++) { if (uploaded[DOCS[i].id]) done++; }
+  var pct = Math.round(done / DOCS.length * 100);
+  document.getElementById('docProgress').style.width = pct + '%';
+  document.getElementById('docProgressLabel').textContent = done + ' of ' + DOCS.length + ' documents uploaded (' + pct + '%)';
 }
 
 renderDocs();
